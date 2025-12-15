@@ -31,7 +31,9 @@
 
 ### Deep Learning & Vision
 ![PyTorch](https://img.shields.io/badge/PyTorch-000?style=for-the-badge&logo=pytorch)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-000?style=for-the-badge&logo=tensorflow)
 ![TorchVision](https://img.shields.io/badge/TorchVision-000?style=for-the-badge&logo=pytorch)
+
 
 ### Experimentation & MLOps
 ![Kaggle](https://img.shields.io/badge/Kaggle-000?style=for-the-badge&logo=kaggle)
