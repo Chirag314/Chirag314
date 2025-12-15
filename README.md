@@ -2,7 +2,8 @@
   <img src="https://raw.githubusercontent.com/Chirag314/Chirag314/main/assets/banner.png" alt="banner" />
 </p>
 
-<h2 align="center">Chirag Desai • Sratistical Programming Lead/Tagline</h2>
+<h2 align="center">Chirag Desai</h2>
+<p align="center"><b>Machine Learning • Data Science • Applied AI</b></p>
 
 <p align="center">
   <img src="https://komarev.com/ghpvc/?username=Chirag314&style=flat-square" alt="profile views" />
@@ -11,25 +12,42 @@
 ---
 
 ## About Me
-- 🔭 Working on: **…**
-- 🌱 Learning: **…**
-- 🧠 Interested in: **…**
-- 🤝 Open to: **…**
-- 📫 Reach me: **…**
+
+- 🔭 Working on: end-to-end machine learning projects, Kaggle competitions, and reproducible ML pipelines  
+- 🌱 Learning: advanced feature engineering, model ensembling, experiment tracking, and scalable ML workflows  
+- 🧠 Interested in: applied machine learning, computer vision, tabular modeling, and real-world problem solving  
+- 🤝 Open to: collaborations on ML projects, Kaggle teams, and research-driven experiments  
+- 📫 Reach me: GitHub discussions or LinkedIn  
 
 ---
 
 ## Tech Stack
+
+### Machine Learning & Data
 ![Python](https://img.shields.io/badge/Python-000?style=for-the-badge&logo=python)
+![NumPy](https://img.shields.io/badge/NumPy-000?style=for-the-badge&logo=numpy)
+![Pandas](https://img.shields.io/badge/Pandas-000?style=for-the-badge&logo=pandas)
+![Scikit-Learn](https://img.shields.io/badge/scikit--learn-000?style=for-the-badge&logo=scikit-learn)
+
+### Deep Learning & Vision
 ![PyTorch](https://img.shields.io/badge/PyTorch-000?style=for-the-badge&logo=pytorch)
-![AWS](https://img.shields.io/badge/AWS-000?style=for-the-badge&logo=amazonaws)
+![TorchVision](https://img.shields.io/badge/TorchVision-000?style=for-the-badge&logo=pytorch)
+
+### Experimentation & MLOps
+![Kaggle](https://img.shields.io/badge/Kaggle-000?style=for-the-badge&logo=kaggle)
+![Weights & Biases](https://img.shields.io/badge/W%26B-000?style=for-the-badge&logo=weightsandbiases)
+![Git](https://img.shields.io/badge/Git-000?style=for-the-badge&logo=git)
+![GitHub](https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github)
+
+### Platforms & Infrastructure
 ![Linux](https://img.shields.io/badge/Linux-000?style=for-the-badge&logo=linux)
 ![Docker](https://img.shields.io/badge/Docker-000?style=for-the-badge&logo=docker)
-![Git](https://img.shields.io/badge/Git-000?style=for-the-badge&logo=git)
+![AWS](https://img.shields.io/badge/AWS-000?style=for-the-badge&logo=amazonaws)
 
 ---
 
 ## GitHub Stats
+
 <p align="left">
   <img height="165"
        src="https://github-readme-stats.vercel.app/api?username=Chirag314&show_icons=true&hide_title=true" />
