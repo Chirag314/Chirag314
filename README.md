@@ -18,12 +18,11 @@
 
 ## About Me
 
-- 🔭 Working on: end-to-end ML systems with real-world data, model evaluation, and business impact  
-- 🌱 Learning: scalable model deployment, cloud-native ML workflows, production monitoring  
-- 🧠 Interested in: improving model robustness, explainability, and operational efficiency  
-- 🤝 Open to: ML collaborations, Kaggle teams, and research-oriented projects  
-- 📫 Reach me: GitHub discussions or LinkedIn
-
+- 🔭 Building end-to-end machine learning systems with a focus on reproducibility, robustness, and real-world constraints  
+- 🧠 Experienced in translating ambiguous problem statements into measurable ML objectives and evaluation strategies  
+- 🧪 Strong emphasis on validation design, experiment tracking, and failure analysis to ensure reliable model performance  
+- 🏗 Interested in scalable ML architectures, model lifecycle management, and production-grade workflows  
+- 🤝 Open to senior ML engineering and applied data science roles with high ownership and impact
 
 ---
 
