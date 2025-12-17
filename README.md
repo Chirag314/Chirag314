@@ -3,7 +3,6 @@
 </p>
 
 <h2 align="center">Chirag Desai</h2>
-<p align="center"><b>Senior Machine Learning Engineer | Applied ML & Predictive Systems</b></p>
 <p align="center">Delivering production-ready ML solutions — from research and experimentation to deployment and scaling</p>
 
 <p align="center">
