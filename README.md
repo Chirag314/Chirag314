@@ -13,10 +13,11 @@
 ## About Me
 
 - 🔭 Working on: end-to-end machine learning projects, Kaggle competitions, and reproducible ML pipelines  
-- 🌱 Learning: advanced feature engineering, model ensembling, experiment tracking, and scalable ML workflows  
-- 🧠 Interested in: applied machine learning, computer vision, tabular modeling, and real-world problem solving  
-- 🤝 Open to: collaborations on ML projects, Kaggle teams, and research-driven experiments  
-- 📫 Reach me: GitHub discussions or LinkedIn  
+- 🌱 Learning: advanced feature engineering, ensembling strategies, and experiment tracking  
+- 🧠 Interested in: applied ML, computer vision, and data-driven problem solving  
+- 🤝 Open to: ML collaborations, Kaggle teams, and research-oriented projects  
+- 📫 Reach me: GitHub discussions or LinkedIn
+
 
 ---
 
