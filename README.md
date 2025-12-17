@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Chirag314/Chirag314/main/assets/banner.png" alt="banner" />
+  <img src="assets/banner.gif" alt="Chirag Desai — ML Portfolio" width="100%" />
 </p>
 
 <h2 align="center">Chirag Desai</h2>
