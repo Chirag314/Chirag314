@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.gif" alt="" width="100%" height="60%" />
+  <img src="assets/banner.gif" alt="" width="100%" style="max-height:300px;" />
 </p>
 
 <p align="center"><b>Machine Learning • Data Science • Applied AI</b></p>
