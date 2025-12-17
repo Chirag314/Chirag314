@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.mp4" alt="Chirag Desai — ML Portfolio" width="100%" />
+  <img src="assets/banner.gif" alt="Chirag Desai — ML Portfolio" width="100%" />
 </p>
 
 <h2 align="center">Chirag Desai</h2>
