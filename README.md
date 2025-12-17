@@ -1,8 +1,7 @@
 <p align="center">
-  <img src="assets/banner.gif" alt="" width="60%" />
+  <img src="assets/banner.gif" alt="" width="100%" height="60%" />
 </p>
 
-<h2 align="center">Chirag Desai</h2>
 <p align="center"><b>Machine Learning • Data Science • Applied AI</b></p>
 
 <p align="center">
