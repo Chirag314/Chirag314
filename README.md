@@ -2,7 +2,14 @@
   <img src="assets/banner1.gif" alt="" width="100%" style="max-height:300px;" />
 </p>
 
-<p align="center"><b>Machine Learning • Data Science • Applied AI</b></p>
+<h2 align="center">Chirag Desai</h2>
+<p align="center"><b>Senior Machine Learning Engineer | Applied ML & Predictive Systems</b></p>
+<p align="center">Delivering production-ready ML solutions — from research and experimentation to deployment and scaling</p>
+
+<p align="center">
+  <a href="mailto:chirag.d314@gmail.com">Email</a> • 
+  <a href="https://www.kaggle.com/Chirag314">Kaggle</a>
+</p>
 
 <p align="center">
   <img src="https://komarev.com/ghpvc/?username=Chirag314&style=flat-square" alt="profile views" />
@@ -12,9 +19,9 @@
 
 ## About Me
 
-- 🔭 Working on: end-to-end machine learning projects, Kaggle competitions, and reproducible ML pipelines  
-- 🌱 Learning: advanced feature engineering, ensembling strategies, and experiment tracking  
-- 🧠 Interested in: applied ML, computer vision, and data-driven problem solving  
+- 🔭 Working on: end-to-end ML systems with real-world data, model evaluation, and business impact  
+- 🌱 Learning: scalable model deployment, cloud-native ML workflows, production monitoring  
+- 🧠 Interested in: improving model robustness, explainability, and operational efficiency  
 - 🤝 Open to: ML collaborations, Kaggle teams, and research-oriented projects  
 - 📫 Reach me: GitHub discussions or LinkedIn
 
