@@ -72,7 +72,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Chirag314/Chirag314/output/minesweeper-pop-dark.svg" />
-    <img alt="Minesweeper-style contribution sweep" src="https://raw.githubusercontent.com/Chirag314/Chirag314/output/minesweeper-pop.svg" />
+    <img  src="https://raw.githubusercontent.com/Chirag314/Chirag314/output/minesweeper-pop.svg" />
   </picture>
 </p>
 
