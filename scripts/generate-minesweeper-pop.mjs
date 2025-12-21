@@ -88,7 +88,7 @@ function buildSVG(grid, theme) {
   }
 
   // Pops every N cells visited
-  const popsEvery = 8;
+  const popsEvery = 6;
   const popOrder = order.filter((_, i) => i % popsEvery === 0);
 
   const stepDur = dur / steps;
