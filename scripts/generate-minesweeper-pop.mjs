@@ -1,123 +1,100 @@
-// scripts/generate-minesweeper-pop.mjs
 import * as fs from "node:fs";
 import * as path from "node:path";
-import cheerio from "cheerio";
 
 const USERNAME = process.env.USERNAME || "Chirag314";
+const TOKEN = process.env.GITHUB_TOKEN;
 
-// Fetch the contribution SVG-ish HTML (no auth needed)
-async function fetchContribHTML(username) {
-  const url = `https://github.com/users/${username}/contributions`;
-  const res = await fetch(url, {
+if (!TOKEN) {
+  console.error("Missing GITHUB_TOKEN env var.");
+  process.exit(1);
+}
+
+async function graphql(query, variables) {
+  const res = await fetch("https://api.github.com/graphql", {
+    method: "POST",
     headers: {
-      "user-agent": "minesweeper-pop-generator",
-      "accept-language": "en-US,en;q=0.9",
+      "Authorization": `bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+      "User-Agent": "minesweeper-pop-generator",
     },
+    body: JSON.stringify({ query, variables }),
   });
-  if (!res.ok) throw new Error(`Failed to fetch contributions: ${res.status}`);
-  return await res.text();
+
+  const json = await res.json();
+  if (!res.ok || json.errors) {
+    console.error("GraphQL error:", JSON.stringify(json.errors || json, null, 2));
+    process.exit(1);
+  }
+  return json.data;
 }
 
 function clamp(n, a, b) {
   return Math.max(a, Math.min(b, n));
 }
 
-// Turn GitHub contribution rects into our own SVG grid + animation overlay
-function buildAnimatedSVG(rects, opts) {
+function colorFor(count) {
+  // GitHub-like intensity buckets (dark theme colors)
+  if (count <= 0) return "#161b22";
+  if (count < 3) return "#0e4429";
+  if (count < 7) return "#006d32";
+  if (count < 15) return "#26a641";
+  return "#39d353";
+}
+
+function buildAnimatedSVG(grid, opts) {
   const {
-    width = 900,
-    height = 180,
     padding = 12,
     cell = 11,
     gap = 2,
     bg = "#0d1117",
     border = "#30363d",
     text = "#c9d1d9",
-    sparkA = "#22c55e",  // green
-    sparkB = "#60a5fa",  // blue
-    sparkC = "#a78bfa",  // purple
+    sparkA = "#22c55e",
+    sparkB = "#60a5fa",
+    sparkC = "#a78bfa",
   } = opts;
 
-  // GitHub provides x/y positions already; normalize to start at (0,0)
-  const xs = rects.map(r => r.x);
-  const ys = rects.map(r => r.y);
-  const minX = Math.min(...xs);
-  const minY = Math.min(...ys);
-
-  const norm = rects.map(r => ({
-    ...r,
-    x: (r.x - minX),
-    y: (r.y - minY),
-  }));
-
-  const maxX = Math.max(...norm.map(r => r.x));
-  const maxY = Math.max(...norm.map(r => r.y));
-
-  // Scale grid to our chosen cell size (GitHub uses 11 and 2 gap already; we’ll re-map)
-  // We infer step from the data by looking at smallest non-zero delta.
-  const uniqX = [...new Set(norm.map(r => r.x))].sort((a,b)=>a-b);
-  const uniqY = [...new Set(norm.map(r => r.y))].sort((a,b)=>a-b);
-  const stepX = uniqX.length > 1 ? (uniqX[1] - uniqX[0]) : 13;
-  const stepY = uniqY.length > 1 ? (uniqY[1] - uniqY[0]) : 13;
-
-  const cols = uniqX.length;
-  const rows = uniqY.length;
+  const cols = grid[0].length;
+  const rows = grid.length;
 
   const gridW = cols * (cell + gap) - gap;
   const gridH = rows * (cell + gap) - gap;
 
-  const viewW = Math.max(width, gridW + padding * 2);
-  const viewH = Math.max(height, gridH + padding * 2 + 22);
+  const viewW = gridW + padding * 2;
+  const viewH = gridH + padding * 2 + 22;
 
-  // Map original x/y to grid coordinates 0..cols-1 / 0..rows-1
-  const xIndex = new Map(uniqX.map((x,i)=>[x,i]));
-  const yIndex = new Map(uniqY.map((y,i)=>[y,i]));
-
-  const cells = norm.map(r => {
-    const cx = xIndex.get(r.x);
-    const cy = yIndex.get(r.y);
-    const px = padding + cx * (cell + gap);
-    const py = padding + cy * (cell + gap);
-    return { ...r, cx, cy, px, py };
-  });
-
-  // Animation sweep: visit cells in a snakey scan pattern (like Minesweeper clearing)
+  // Visit order: snakey column scan (minesweeper sweep vibe)
   const order = [];
   for (let c = 0; c < cols; c++) {
-    if (c % 2 === 0) {
-      for (let r = 0; r < rows; r++) order.push([c, r]);
-    } else {
-      for (let r = rows - 1; r >= 0; r--) order.push([c, r]);
-    }
+    if (c % 2 === 0) for (let r = 0; r < rows; r++) order.push([c, r]);
+    else for (let r = rows - 1; r >= 0; r--) order.push([c, r]);
   }
 
   const totalSteps = order.length;
-  const dur = clamp(Math.round(totalSteps / 18), 6, 16); // 6–16s, based on grid size
+  const dur = clamp(Math.round(totalSteps / 18), 6, 16);
   const stepDur = dur / totalSteps;
 
-  function cellAt(c, r) {
-    // find by indices
-    // grid is dense; use a map for speed
+  const cursorXValues = order.map(([c]) => (padding + c * (cell + gap) + cell / 2)).join(";");
+  const cursorYValues = order.map(([,r]) => (padding + r * (cell + gap) + cell / 2)).join(";");
+
+  const rects = [];
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const px = padding + c * (cell + gap);
+      const py = padding + r * (cell + gap);
+      const fill = grid[r][c];
+      rects.push(`<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="2" ry="2" fill="${fill}" />`);
+    }
   }
-  const cellMap = new Map(cells.map(cc => [`${cc.cx},${cc.cy}`, cc]));
-  const seq = order.map(([c,r]) => cellMap.get(`${c},${r}`)).filter(Boolean);
 
-  // Cursor path animation values
-  const cursorXValues = seq.map(s => (s.px + cell/2)).join(";");
-  const cursorYValues = seq.map(s => (s.py + cell/2)).join(";");
+  const popsEvery = 8;
+  const popCells = order.filter((_, i) => i % popsEvery === 0);
 
-  // Spark pops: pick every Nth visited cell (avoid too many elements)
-  const popsEvery = 8; // tweak this if you want more/less pops
-  const popCells = seq.filter((_,i) => i % popsEvery === 0);
+  const pops = popCells.map(([c, r], idx) => {
+    const t = (idx * popsEvery) * stepDur;
+    const x = padding + c * (cell + gap) + cell / 2;
+    const y = padding + r * (cell + gap) + cell / 2;
 
-  const popElements = popCells.map((s, idx) => {
-    const t = (idx * popsEvery) * stepDur; // seconds into animation
-    const id = `p${idx}`;
-    const x = s.px + cell/2;
-    const y = s.py + cell/2;
-
-    // Cartoon “spark”: small circles + star-ish lines that scale + fade quickly
-    // Safe/clean: no bomb shapes, just celebratory pops.
     return `
       <g opacity="0">
         <animate attributeName="opacity" values="0;1;0" dur="0.55s" begin="${t.toFixed(3)}s" />
@@ -140,13 +117,7 @@ function buildAnimatedSVG(rects, opts) {
     `;
   }).join("\n");
 
-  const rectElements = cells.map(s => {
-    // Use GitHub-provided fill (already indicates intensity)
-    const fill = s.fill || "#161b22";
-    return `<rect x="${s.px}" y="${s.py}" width="${cell}" height="${cell}" rx="2" ry="2" fill="${fill}" />`;
-  }).join("\n");
-
-  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${viewW}" height="${viewH}" viewBox="0 0 ${viewW} ${viewH}">
   <defs>
     <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
@@ -160,15 +131,13 @@ function buildAnimatedSVG(rects, opts) {
 
   <rect x="0" y="0" width="${viewW}" height="${viewH}" rx="12" fill="${bg}" stroke="${border}" />
 
-  <text x="${padding}" y="${viewH - 10}" fill="${text}" font-size="12" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto">
+  <text x="${padding}" y="${viewH - 10}" fill="${text}" font-size="12"
+        font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto">
     Minesweeper-style sweep (spark pops)
   </text>
 
-  <g>
-    ${rectElements}
-  </g>
+  <g>${rects.join("\n")}</g>
 
-  <!-- cursor -->
   <g filter="url(#softGlow)">
     <circle r="4" fill="${sparkB}">
       <animate attributeName="cx" dur="${dur}s" repeatCount="indefinite" values="${cursorXValues}" calcMode="discrete" />
@@ -181,63 +150,60 @@ function buildAnimatedSVG(rects, opts) {
     </circle>
   </g>
 
-  <!-- spark pops -->
-  <g filter="url(#softGlow)">
-    ${popElements}
-  </g>
+  <g filter="url(#softGlow)">${pops}</g>
 </svg>`;
-
-  return svg;
-}
-
-function parseRectsFromHTML(html) {
-  const $ = cheerio.load(html);
-  const rects = [];
-  $("svg rect").each((_, el) => {
-    const x = Number($(el).attr("x"));
-    const y = Number($(el).attr("y"));
-    const fill = $(el).attr("fill") || undefined;
-    // Some rects have data-count, data-date etc. (optional)
-    rects.push({ x, y, fill });
-  });
-  if (rects.length === 0) throw new Error("No rects found; GitHub page structure may have changed.");
-  return rects;
 }
 
 async function main() {
-  const html = await fetchContribHTML(USERNAME);
-  const rects = parseRectsFromHTML(html);
+  const query = `
+    query($login: String!) {
+      user(login: $login) {
+        contributionsCollection {
+          contributionCalendar {
+            weeks {
+              contributionDays {
+                contributionCount
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await graphql(query, { login: USERNAME });
+  const weeks = data.user.contributionsCollection.contributionCalendar.weeks;
+
+  // Convert weeks->days into rows (7) x cols (weeks)
+  const cols = weeks.length;
+  const rows = 7;
+
+  const grid = Array.from({ length: rows }, () => Array(cols).fill("#161b22"));
+  for (let c = 0; c < cols; c++) {
+    const days = weeks[c].contributionDays; // length 7
+    for (let r = 0; r < rows; r++) {
+      grid[r][c] = colorFor(days[r]?.contributionCount ?? 0);
+    }
+  }
 
   const distDir = path.join(process.cwd(), "dist");
   fs.mkdirSync(distDir, { recursive: true });
 
-  // Dark (GitHub-native)
-  const darkSVG = buildAnimatedSVG(rects, {
-    bg: "#0d1117",
-    border: "#30363d",
-    text: "#c9d1d9",
-    sparkA: "#22c55e",
-    sparkB: "#60a5fa",
-    sparkC: "#a78bfa",
+  const dark = buildAnimatedSVG(grid, {
+    bg: "#0d1117", border: "#30363d", text: "#c9d1d9",
+    sparkA: "#22c55e", sparkB: "#60a5fa", sparkC: "#a78bfa"
   });
 
-  // Light
-  const lightSVG = buildAnimatedSVG(rects, {
-    bg: "#ffffff",
-    border: "#e5e7eb",
-    text: "#111827",
+  // Light version colors
+  const lightGrid = grid.map(row => row.map(hex => {
+    // Map dark greens to lighter palette
+    return hex === "#161b22" ? "#ebedf0" :
+           hex === "#0e4429" ? "#c6e48b" :
+           hex === "#006d32" ? "#7bc96f" :
+           hex === "#26a641" ? "#239a3b" :
+           "#196127";
+  }));
+
+  const light = buildAnimatedSVG(lightGrid, {
+    bg: "#ffffff", border: "#e5e7eb", text: "#111827",
     sparkA: "#10b981",
-    sparkB: "#2563eb",
-    sparkC: "#7c3aed",
-  });
-
-  fs.writeFileSync(path.join(distDir, "minesweeper-pop-dark.svg"), darkSVG, "utf8");
-  fs.writeFileSync(path.join(distDir, "minesweeper-pop.svg"), lightSVG, "utf8");
-
-  console.log("Generated dist/minesweeper-pop.svg and dist/minesweeper-pop-dark.svg");
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
