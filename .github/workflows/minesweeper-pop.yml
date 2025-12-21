@@ -1,9 +1,9 @@
 name: Generate minesweeper spark pops
 
 on:
-  schedule:
-    - cron: "0 1 * * *"   # daily
   workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *"
 
 permissions:
   contents: write
@@ -20,12 +20,13 @@ jobs:
           node-version: "20"
 
       - name: Install deps
-        run: npm init -y && npm i cheerio
+        run: npm init -y && npm i
 
-      - name: Generate SVG
+      - name: Generate SVG (GraphQL)
         run: node scripts/generate-minesweeper-pop.mjs
         env:
           USERNAME: Chirag314
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to output branch
         uses: crazy-max/ghaction-github-pages@v4
