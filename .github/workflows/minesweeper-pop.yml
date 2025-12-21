@@ -1,0 +1,36 @@
+name: Generate minesweeper spark pops
+
+on:
+  schedule:
+    - cron: "0 1 * * *"   # daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm init -y && npm i cheerio
+
+      - name: Generate SVG
+        run: node scripts/generate-minesweeper-pop.mjs
+        env:
+          USERNAME: Chirag314
+
+      - name: Publish to output branch
+        uses: crazy-max/ghaction-github-pages@v4
+        with:
+          target_branch: output
+          build_dir: dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
