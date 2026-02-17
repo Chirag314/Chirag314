@@ -22,7 +22,7 @@
 - 🧠 Experienced in translating ambiguous problem statements into measurable ML objectives and evaluation strategies  
 - 🧪 Strong emphasis on validation design, experiment tracking, and failure analysis to ensure reliable model performance  
 - 🏗 Interested in scalable ML architectures, model lifecycle management, and production-grade workflows  
-- 🤝 Open to senior ML engineering and applied data science roles with high ownership and impact
+
 
 ---
 
