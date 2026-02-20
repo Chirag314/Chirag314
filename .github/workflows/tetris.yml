@@ -2,7 +2,7 @@ name: Generate Tetris Contributions
 
 on:
   schedule:
-    - cron: "0 3 * * *"  # daily
+    - cron: "0 3 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,10 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout main
+        uses: actions/checkout@v4
         with:
-          ref: output
+          ref: main
           fetch-depth: 0
 
       - name: Setup Node
@@ -22,7 +24,7 @@ jobs:
           node-version: "20"
 
       - name: Install
-        run: npm ci
+        run: npm install
 
       - name: Generate SVG
         env:
@@ -30,10 +32,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/generate-tetris-svg.js
 
-      - name: Commit & Push
+      - name: Push to output branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
+
+          git checkout -B output
+          git add output/tetris.svg
           git commit -m "chore: update tetris svg" || echo "No changes"
-          git push
+          git push -f origin output
