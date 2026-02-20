@@ -1,0 +1,11 @@
+{
+  "name": "tetris-contrib",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate-tetris-svg.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.0.0"
+  }
+}
