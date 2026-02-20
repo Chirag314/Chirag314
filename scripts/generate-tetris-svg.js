@@ -38,12 +38,12 @@ async function fetchContrib() {
 function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
 function colorFor(count) {
-  // Tetris-ish neon palette by intensity
-  if (count <= 0) return "#111827";         // dark
-  if (count <= 2) return "#22c55e";         // green
-  if (count <= 5) return "#06b6d4";         // cyan
-  if (count <= 10) return "#a855f7";        // purple
-  return "#f97316";                         // orange
+  // High-contrast neon palette on dark backgrounds
+  if (count <= 0) return "#0b1224";   // deep background tile
+  if (count <= 2) return "#22c55e";   // neon green
+  if (count <= 5) return "#38bdf8";   // bright sky
+  if (count <= 10) return "#a78bfa";  // vivid violet
+  return "#fb7185";                  // neon pink/red
 }
 
 function buildSvg(days) {
@@ -68,11 +68,12 @@ function buildSvg(days) {
     const yStart = yFinal - 60 - (c * 2);
     const delay = (col * 0.01) + (row * 0.02);
 
-    rects += `
-      <rect x="${x}" y="${yStart}" width="${cell}" height="${cell}" rx="2" fill="${fill}">
-        <animate attributeName="y" from="${yStart}" to="${yFinal}" dur="0.9s" begin="${delay}s" fill="freeze" />
-      </rect>
-    `;
+   rects += `
+    <rect x="${x}" y="${yStart}" width="${cell}" height="${cell}" rx="2"
+          fill="${fill}" stroke="#0f172a" stroke-width="1" filter="url(#neonGlow)">
+      <animate attributeName="y" from="${yStart}" to="${yFinal}" dur="0.9s" begin="${delay}s" fill="freeze" />
+    </rect>
+  `;
   }
 
   const title = `
@@ -80,12 +81,52 @@ function buildSvg(days) {
       Contributions Tetris (auto-updated)
     </text>
   `;
+   const defs = `
+    <defs>
+      <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="1.5" result="blur"/>
+        <feColorMatrix in="blur" type="matrix"
+          values="1 0 0 0 0
+                  0 1 0 0 0
+                  0 0 1 0 0
+                  0 0 0 0.9 0" result="glow"/>
+        <feMerge>
+          <feMergeNode in="glow"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
+    </defs>
+  `;
 
+  const total = days.reduce((a, d) => a + d.contributionCount, 0);
+  const last7 = days.slice(-7).reduce((a, d) => a + d.contributionCount, 0);
+  const last30 = days.slice(-30).reduce((a, d) => a + d.contributionCount, 0);
+  
+  const hud = `
+    <g opacity="0.95">
+      <rect x="20" y="${height - 38}" width="${width - 40}" height="22" rx="8" fill="#0f172a" stroke="#1f2a44"/>
+      <text x="32" y="${height - 22}" fill="#e5e7eb" font-family="ui-sans-serif, system-ui" font-size="12" font-weight="700">
+        Scoreboard
+      </text>
+      <text x="120" y="${height - 22}" fill="#93c5fd" font-family="ui-sans-serif, system-ui" font-size="12">
+        Total: ${total}
+      </text>
+      <text x="220" y="${height - 22}" fill="#86efac" font-family="ui-sans-serif, system-ui" font-size="12">
+        7d: ${last7}
+      </text>
+      <text x="290" y="${height - 22}" fill="#fda4af" font-family="ui-sans-serif, system-ui" font-size="12">
+        30d: ${last30}
+      </text>
+    </g>
+  `;
+  
   return `
   <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
     <rect x="0" y="0" width="${width}" height="${height}" fill="#0b1020"/>
+    ${defs}
     ${title}
     ${rects}
+    ${hud}
   </svg>
   `.trim();
 }
