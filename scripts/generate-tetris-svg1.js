@@ -122,7 +122,6 @@ function buildHeatmap(weeks) {
   const last7 = daysFlat.slice(-7).reduce((a, d) => a + (d.contributionCount ?? 0), 0);
   const last30 = daysFlat.slice(-30).reduce((a, d) => a + (d.contributionCount ?? 0), 0);
 
-  // Seed changes gradually with your year total + first visible date
   const seed = hashString(`${username}:${totalYear}:${daysFlat[0]?.date ?? ""}`);
 
   return { grid, dates, W, H, monthStarts, totalYear, last7, last30, seed };
@@ -148,6 +147,7 @@ const LEVEL_COLOR = {
 
 // --------------------
 // SVG render: blank -> build rows bottom-to-top -> flash -> reset -> LOOP FOREVER
+// (No event-based SMIL; everything uses repeatCount="indefinite")
 // --------------------
 function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) {
   const cell = 12;
@@ -175,7 +175,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   const STAGGER = 0.02;        // spacing between blocks within the row
   const FALL_DUR = 0.55;       // fall time for each 1×1 block
   const FINISH_FLASH = 2.0;    // flash at end
-  const RESET_FADE = 0.35;     // quick fade to blank (for nice reset)
+  const RESET_FADE = 0.35;     // quick fade to blank
 
   const buildStart = 0.0;
   const buildEnd = buildStart + H * ROW_DUR;
@@ -183,12 +183,8 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   const finishEnd = finishStart + FINISH_FLASH;
   const cycleDur = finishEnd + RESET_FADE;
 
-  // RNG used only to randomize order of blocks within a row (still deterministic per day)
   const rng = mulberry32(seed);
 
-  // IMPORTANT: true infinite loop mechanism
-  // We use `clock.begin+...` so every animation restarts each clock cycle automatically.
-  // We avoid `fill="freeze"` so nothing gets stuck after the first pass.
   const defs = `
   <defs>
     <filter id="neonGlow" x="-60%" y="-60%" width="220%" height="220%">
@@ -203,10 +199,6 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
       <stop offset="0%" stop-color="#070a14"/>
       <stop offset="100%" stop-color="#0b1020"/>
     </linearGradient>
-
-    <!-- Master clock: entire animation loop (repeat forever) -->
-    <animate id="clock" attributeName="opacity"
-             values="1;1" dur="${cycleDur}s" repeatCount="indefinite" />
   </defs>
   `;
 
@@ -256,35 +248,32 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // --- Helper: tile opacity timeline (per cycle, loops with clock) ---
+  // --- Helper: tile opacity timeline (loops on its own) ---
   function tileOpacityAnim(tAppear, tDisappear) {
-    // Keep it simple + robust: absolute seconds, looped by clock
-    // 0 until appear, 1 until disappear, then 0 until end.
     const eps = 0.0001;
     const ta = Math.max(0, tAppear);
     const td = Math.max(ta + eps, tDisappear);
 
-    const dur = cycleDur;
-
-    const keyTimes = [
+    const kt = [
       0,
-      clamp(ta / dur, 0, 1),
-      clamp((ta + eps) / dur, 0, 1),
-      clamp(td / dur, 0, 1),
+      clamp(ta / cycleDur, 0, 1),
+      clamp((ta + eps) / cycleDur, 0, 1),
+      clamp(td / cycleDur, 0, 1),
       1,
     ].join(";");
 
     return `
       <animate attributeName="opacity"
-               begin="clock.begin"
-               dur="${dur}s"
+               begin="0s"
+               dur="${cycleDur}s"
+               repeatCount="indefinite"
                values="0;0;1;1;0"
-               keyTimes="${keyTimes}"
+               keyTimes="${kt}"
                fill="remove" />
     `.trim();
   }
 
-  // --- Schedule appearance time per contributed cell (by rows bottom->top) ---
+  // --- Appearance time per cell (row build bottom->top) ---
   const appearTime = Array.from({ length: H }, () => Array.from({ length: W }, () => null));
 
   for (let y = H - 1; y >= 0; y--) {
@@ -292,11 +281,8 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     const rowStart = buildStart + rowIndex * ROW_DUR;
 
     const xs = [];
-    for (let x = 0; x < W; x++) {
-      if (grid[y][x] > 0) xs.push(x);
-    }
+    for (let x = 0; x < W; x++) if (grid[y][x] > 0) xs.push(x);
 
-    // deterministic shuffle per day (nice variation but stable)
     for (let i = xs.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [xs[i], xs[j]] = [xs[j], xs[i]];
@@ -310,9 +296,9 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // --- Contributed tiles layer (starts blank; tiles appear when their blocks land) ---
+  // --- Contributed tiles layer (animated appear -> hold -> disappear) ---
   let contribTiles = "";
-  const tDisappear = finishEnd; // after flash/hold, fade to blank
+  const tDisappear = finishEnd;
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       if (grid[y][x] <= 0) continue;
@@ -323,7 +309,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
       const lvl = bucketLevel(grid[y][x]);
       const fill = LEVEL_COLOR[lvl];
 
-      const tAppear = appearTime[y][x] ?? buildEnd; // fallback
+      const tAppear = appearTime[y][x] ?? buildEnd;
       contribTiles += `
         <rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="3"
               fill="${fill}" stroke="#0f172a" stroke-width="1"
@@ -334,30 +320,36 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // --- Falling blocks overlay (1×1 drops landing exactly on contributed tiles) ---
+  // --- Falling blocks overlay (1×1 drops) ---
   function fallingBlock({ x, y, fill, begin }) {
     const px = gridX0 + x * (cell + gap);
     const pyEnd = gridY0 + y * (cell + gap);
 
-    // start above the grid
     const yStart = gridY0 - 7 * (cell + gap);
     const dyTrans = (pyEnd - yStart).toFixed(2);
 
-    // Key change vs your version:
-    // - begin="clock.begin+...s"
-    // - fill="remove" (no freeze)
+    // Convert begin window to keyTimes on a full-cycle looping animation
+    const eps = 0.0001;
+    const t0 = clamp(begin / cycleDur, 0, 1);
+    const t1 = clamp((begin + eps) / cycleDur, 0, 1);
+    const t2 = clamp((begin + FALL_DUR) / cycleDur, 0, 1);
+    const t3 = clamp((begin + FALL_DUR + eps) / cycleDur, 0, 1);
+
     return `
       <g opacity="0">
         <animate attributeName="opacity"
-                 begin="clock.begin+${begin}s"
-                 dur="${FALL_DUR}s"
-                 values="0;1;1;0"
-                 keyTimes="0;0.02;0.95;1"
+                 begin="0s"
+                 dur="${cycleDur}s"
+                 repeatCount="indefinite"
+                 values="0;0;1;0;0"
+                 keyTimes="0;${t0};${t1};${t2};1"
                  fill="remove" />
         <animateTransform attributeName="transform" type="translate"
-                          begin="clock.begin+${begin}s"
-                          dur="${FALL_DUR}s"
-                          from="0 0" to="0 ${dyTrans}"
+                          begin="0s"
+                          dur="${cycleDur}s"
+                          repeatCount="indefinite"
+                          values="0 0;0 0;0 ${dyTrans};0 ${dyTrans};0 0"
+                          keyTimes="0;${t0};${t2};${t3};1"
                           fill="remove" />
         <rect x="${px}" y="${yStart}" width="${cell}" height="${cell}" rx="3"
               fill="${fill}" stroke="#0f172a" stroke-width="1"
@@ -374,7 +366,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     const xs = [];
     for (let x = 0; x < W; x++) if (grid[y][x] > 0) xs.push(x);
 
-    // Per-row deterministic shuffle (stable without relying on global rng state)
+    // per-row deterministic shuffle
     const rowSeed = (seed + (y + 1) * 10007) >>> 0;
     const rr = mulberry32(rowSeed);
     for (let i = xs.length - 1; i > 0; i--) {
@@ -392,21 +384,27 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // --- Finish flash (2 seconds) ---
-  // Make it loop via clock.begin, and do NOT freeze.
+  // --- Finish flash (loops) ---
+  const f0 = clamp(finishStart / cycleDur, 0, 1);
+  const f1 = clamp((finishStart + FINISH_FLASH * 0.15) / cycleDur, 0, 1);
+  const f2 = clamp((finishStart + FINISH_FLASH * 0.5) / cycleDur, 0, 1);
+  const f3 = clamp((finishStart + FINISH_FLASH * 0.85) / cycleDur, 0, 1);
+  const f4 = clamp((finishStart + FINISH_FLASH) / cycleDur, 0, 1);
+
   const flash = `
     <rect x="${gridX0}" y="${gridY0}" width="${wellW}" height="${wellH}" rx="10"
           fill="#ffffff" opacity="0">
       <animate attributeName="opacity"
-               begin="clock.begin+${finishStart}s"
-               dur="${FINISH_FLASH}s"
-               values="0;0.18;0.28;0.18;0"
-               keyTimes="0;0.15;0.5;0.85;1"
+               begin="0s"
+               dur="${cycleDur}s"
+               repeatCount="indefinite"
+               values="0;0;0.18;0.28;0.18;0;0"
+               keyTimes="0;${f0};${f1};${f2};${f3};${f4};1"
                fill="remove" />
     </rect>
   `;
 
-  // --- Legend + stats (GitHub-like) ---
+  // --- Legend + stats ---
   const legendY = gridY0 + wellH + 26;
   const legendXRight = gridX0 + wellW;
 
@@ -438,7 +436,6 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     </text>
   `;
 
-  // --- Final SVG ---
   return `
 <svg xmlns="http://www.w3.org/2000/svg"
      width="${INTRINSIC_W}" height="${INTRINSIC_H}"
