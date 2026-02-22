@@ -173,31 +173,61 @@ function clearFullRows(board) {
 // Convert contributions -> number of pieces + seed
 // --------------------
 function deriveGamePlan(days) {
-  // Use recent activity to define "how long the game runs"
-  const recent = days.slice(-180);
+  // Use last 140 days so it mirrors your recent activity strongly
+  const recent = days.slice(-140);
+
   const total = recent.reduce((a, d) => a + d.contributionCount, 0);
-
-  // Energy: damp high values, keep it stable
-  const energy = recent.reduce((a, d) => a + Math.min(d.contributionCount, 10), 0);
-
-  // Pieces target: keep SVG size manageable
-  // ~14 to 26 pieces feels animated but not huge
-  const pieces = clamp(Math.floor(energy / 35), 14, 26);
-
-  // Seed uses username + total so it changes gradually over time
-  const seed = hashString(`${username}:${total}:${recent[0]?.date ?? ""}`);
-
-  // Also return quick stats for HUD
   const last7 = days.slice(-7).reduce((a, d) => a + d.contributionCount, 0);
   const last30 = days.slice(-30).reduce((a, d) => a + d.contributionCount, 0);
 
-  return { pieces, seed, totalRecent: total, last7, last30 };
+  // base seed changes with time/history
+  const seed = hashString(`${username}:${total}:${recent[0]?.date ?? ""}`);
+
+  // Build a deterministic “piece schedule” from daily counts
+  // More contributions => more drops that day (capped)
+  const schedule = [];
+  for (const d of recent) {
+    const c = d.contributionCount;
+
+    // 0 contributions: usually skip (keeps animation tighter)
+    if (c <= 0) continue;
+
+    // Drops per day: 1–3 depending on activity
+    const drops = clamp(1 + Math.floor(c / 8), 1, 3);
+
+    for (let k = 0; k < drops; k++) {
+      const h = hashString(`${d.date}:${c}:${k}:${seed}`);
+
+      const piece = PIECE_ORDER[h % PIECE_ORDER.length];
+      const rot = (h >>> 8) % 4;
+
+      // x position derived from date hash
+      const ox = (h >>> 16) % (W - 3);
+
+      schedule.push({ piece, rot, ox });
+    }
+  }
+
+  // keep svg manageable
+  const maxPieces = 40;
+  const minPieces = 18;
+  const pieces = clamp(schedule.length, minPieces, maxPieces);
+
+  return {
+    seed,
+    pieces,
+    schedule: schedule.slice(-pieces), // keep most recent drops
+    totalRecent: total,
+    last7,
+    last30
+  };
 }
+
 
 // --------------------
 // Simulate game -> steps (frames)
 // --------------------
-function simulateGame({ pieces, seed }) {
+function simulateGame({ pieces, seed, schedule }) {
   const rng = mulberry32(seed);
 
   let board = emptyBoard();
@@ -208,12 +238,14 @@ function simulateGame({ pieces, seed }) {
   const steps = [];
 
   for (let i = 0; i < pieces; i++) {
-    const piece = PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
-    const rot = Math.floor(rng() * 4);
+        // Use scheduled piece (mirrors contributions)
+    const planned = schedule?.[i];
+    const piece = planned?.piece ?? PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
+    const rot = planned?.rot ?? Math.floor(rng() * 4);
     const shape = PIECES[piece][rot];
 
-    // spawn x around center, allow some randomness
-    let ox = clamp(Math.floor(3 + rng() * 4), 0, W - 4);
+    // Scheduled X (fallback to rng)
+    let ox = planned?.ox ?? clamp(Math.floor(3 + rng() * 4), 0, W - 4);
     let oy = 0;
 
     // If spawn collides, nudge a bit
@@ -303,6 +335,9 @@ function simulateGame({ pieces, seed }) {
 
   return steps;
 }
+ // Make GitHub render it wide (intrinsic pixel size)
+  const INTRINSIC_W = 1200;
+  const INTRINSIC_H = Math.round((height / width) * INTRINSIC_W);
 
 // --------------------
 // SVG Rendering
@@ -453,40 +488,48 @@ function renderSvg(steps, hudStats) {
   const hud = (() => {
     const { totalRecent, last7, last30 } = hudStats;
 
-    // Take last step score/lines
     const final = steps[steps.length - 1] || { score: 0, lines: 0 };
     const score = final.score ?? 0;
     const lines = final.lines ?? 0;
 
     const y = pad + wellH + 34;
 
+    const leftX = pad + 12;
+    const rightX = pad + wellW - 12;          // right edge inside the HUD
+    const midRightX = rightX - 150;           // spacing for 2–3 values
+
     return `
       <g opacity="0.98">
-        <rect x="${pad}" y="${y - 18}" width="${width - pad * 2}" height="28" rx="10"
+        <rect x="${pad}" y="${y - 18}" width="${wellW}" height="28" rx="10"
               fill="#0f172a" stroke="#1f2a44" />
-        <text x="${pad + 12}" y="${y}" fill="#e5e7eb"
+
+        <text x="${leftX}" y="${y}" fill="#e5e7eb"
               font-family="ui-sans-serif, system-ui" font-size="12" font-weight="800">
           SCORE: ${score}  •  LINES: ${lines}
         </text>
-        <text x="${pad + 175}" y="${y}" fill="#93c5fd"
-              font-family="ui-sans-serif, system-ui" font-size="12">
-          Recent: ${totalRecent}
-        </text>
-        <text x="${pad + 292}" y="${y}" fill="#86efac"
-              font-family="ui-sans-serif, system-ui" font-size="12">
+
+        <text x="${midRightX}" y="${y}" fill="#86efac"
+              font-family="ui-sans-serif, system-ui" font-size="12"
+              text-anchor="end">
           7d: ${last7}
         </text>
-        <text x="${pad + 360}" y="${y}" fill="#fda4af"
-              font-family="ui-sans-serif, system-ui" font-size="12">
-          30d: ${last30}
+
+        <text x="${rightX}" y="${y}" fill="#fda4af"
+              font-family="ui-sans-serif, system-ui" font-size="12"
+              text-anchor="end">
+          30d: ${last30}  •  Recent: ${totalRecent}
         </text>
       </g>
     `;
   })();
 
+
   return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"
-     viewBox="0 0 ${width} ${height}">
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="${INTRINSIC_W}" height="${INTRINSIC_H}"
+     viewBox="0 0 ${width} ${height}"
+     preserveAspectRatio="xMidYMid meet">
   <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bgGrad)"/>
   ${defs}
   ${title}
