@@ -216,11 +216,10 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   const cell = 12;
   const gap = 2;
 
-  // Space for GH-style labels
-  const leftLabelW = 34;     // room for Mon/Wed/Fri
-  const topLabelH  = 22;     // room for month labels
+  const leftLabelW = 34; // Mon/Wed/Fri
+  const topLabelH = 22;  // month labels
   const pad = 16;
-  const hudH = 46;           // room for legend + stats
+  const hudH = 46;       // legend + stats
 
   const wellW = W * (cell + gap) - gap;
   const wellH = H * (cell + gap) - gap;
@@ -228,9 +227,19 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   const width = pad * 2 + leftLabelW + wellW;
   const height = pad * 2 + topLabelH + wellH + hudH;
 
-  // Reasonable intrinsic size; final size controlled by README width=""
   const INTRINSIC_W = 900;
   const INTRINSIC_H = Math.round((height / width) * INTRINSIC_W);
+
+  const gridX0 = pad + leftLabelW;
+  const gridY0 = pad + topLabelH;
+
+  // --- Timing: 10 runs loop ---
+  const N_RUNS = 10;
+  const piecesPerRun = 18;
+  const stepDur = 0.55;
+  const pieceDur = 0.85;
+  const runDur = Math.max(piecesPerRun * stepDur + 1.0, 8);
+  const totalDur = N_RUNS * runDur;
 
   const defs = `
   <defs>
@@ -247,17 +256,12 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
       <stop offset="100%" stop-color="#0b1020"/>
     </linearGradient>
 
-    <!-- Master clock loops the overlay forever -->
     <animate id="clock" attributeName="opacity"
-             values="1;1" dur="${10 * 10}s" repeatCount="indefinite" />
+             values="1;1" dur="${totalDur}s" repeatCount="indefinite" />
   </defs>
   `;
 
-  // Grid top-left origin (after labels)
-  const gridX0 = pad + leftLabelW;
-  const gridY0 = pad + topLabelH;
-
-  // Month labels (top)
+  // --- Month labels (filtered spacing already handled in buildHeatmap) ---
   let monthLabels = "";
   for (const m of monthStarts) {
     const x = gridX0 + m.x * (cell + gap);
@@ -271,9 +275,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     `;
   }
 
-  // Weekday labels (left) like GitHub: Mon/Wed/Fri
-  // GitHub rows are typically Sun..Sat; so:
-  // Mon = row 1, Wed = row 3, Fri = row 5
+  // --- Weekday labels like GitHub: Mon/Wed/Fri on left ---
   const dayLabel = (label, row) => {
     const y = gridY0 + row * (cell + gap) + cell - 2;
     return `
@@ -292,12 +294,13 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     ${dayLabel("Fri", 5)}
   `;
 
-  // Heatmap tiles (truth)
+  // --- Heatmap truth layer ---
   let heat = "";
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const px = gridX0 + x * (cell + gap);
       const py = gridY0 + y * (cell + gap);
+
       const lvl = bucketLevel(grid[y][x]);
       const fill = LEVEL_COLOR[lvl];
 
@@ -308,20 +311,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // Overlay animation (10 runs)
-  const N_RUNS = 10;
-  const piecesPerRun = 18;
-  const stepDur = 0.55;
-  const pieceDur = 0.85;
-  const runDur = Math.max(piecesPerRun * stepDur + 1.0, 8);
-  const totalDur = N_RUNS * runDur;
-
-  // Update clock duration to actual totalDur
-  const defsWithClock = defs.replace(
-    /dur="\$\{10 \* 10\}s"/,
-    `dur="${totalDur}s"`
-  );
-
+  // --- Tetromino overlay animation ---
   function renderFallingPiece({ piece, shape, ox, fromY, toY }, begin) {
     const color = PIECE_COLOR[piece];
 
@@ -380,15 +370,24 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // Legend (Less ... More) like GitHub
+  // --- Legend + stats (GitHub-like) ---
   const legendY = gridY0 + wellH + 26;
   const legendXRight = gridX0 + wellW;
 
-  const legendSquares = [0,1,2,3,4].map((lvl, i) => {
+  const legendSquares = [0, 1, 2, 3, 4].map((lvl, i) => {
     const x = legendXRight - (5 - i) * (cell + 4) + 10;
     return `<rect x="${x}" y="${legendY - 10}" width="${cell}" height="${cell}" rx="3"
                   fill="${LEVEL_COLOR[lvl]}" stroke="#0f172a" stroke-width="1" />`;
   }).join("\n");
+
+  const stats = `
+    <text x="${gridX0}" y="${legendY + 2}"
+          fill="#e5e7eb"
+          font-family="ui-sans-serif, system-ui"
+          font-size="11">
+      ${totalYear} contributions in the last year • 7d: ${last7} • 30d: ${last30}
+    </text>
+  `;
 
   const legend = `
     <text x="${legendXRight - 5 * (cell + 4) - 2}" y="${legendY + 2}"
@@ -403,23 +402,13 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     </text>
   `;
 
-  // Stats line (optional; GH shows “X contributions in last year” above the chart;
-  // we place it below to keep your section compact)
-  const stats = `
-    <text x="${gridX0}" y="${legendY + 2}"
-          fill="#e5e7eb"
-          font-family="ui-sans-serif, system-ui"
-          font-size="11">
-      ${totalYear} contributions in the last year • 7d: ${last7} • 30d: ${last30}
-    </text>
-  `;
-
+  // --- Final SVG ---
   return `
 <svg xmlns="http://www.w3.org/2000/svg"
      width="${INTRINSIC_W}" height="${INTRINSIC_H}"
      viewBox="0 0 ${width} ${height}"
      preserveAspectRatio="xMidYMid meet">
-  ${defsWithClock}
+  ${defs}
   <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bgGrad)"/>
 
   ${monthLabels}
