@@ -474,12 +474,12 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
                  values="0;1;1;0"
                  keyTimes="0;0.05;0.95;1"
                  dur="${pieceDur}s"
-                 begin="clock.begin+${begin}s"
+                 begin="${begin}s;clock.repeatEvent+${begin}s"
                  fill="remove" />
         <animateTransform attributeName="transform" type="translate"
                           from="0 0" to="0 ${dyTrans}"
                           dur="${pieceDur}s"
-                          begin="clock.begin+${begin}s"
+                          begin="${begin}s;clock.repeatEvent+${begin}s"
                           fill="remove" />
         ${blocks}
       </g>
