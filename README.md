@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner1.gif" alt="" width="100%" style="max-height:300px;" />
+  <img src="assets/banner1.gif" alt="" width="100%" style="max-height:250px;" />
 </p>
 
 <h2 align="center">Chirag Desai</h2>
@@ -71,4 +71,8 @@
 
 ## 🎮 Contribution Tetris
 
-![Tetris Contributions](https://raw.githubusercontent.com/Chirag314/Chirag314/output/output/tetris.svg)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Chirag314/Chirag314/output/output/tetris.svg" width="100%" />
+</p>
+
