@@ -30,7 +30,7 @@ jobs:
         env:
           GITHUB_USERNAME: Chirag314
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/generate-tetris-svg.js
+        run: node scripts/generate-tetris-svg1.js
 
       - name: Push to output branch
         run: |
