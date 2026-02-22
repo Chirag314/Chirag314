@@ -486,7 +486,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
       const begin = baseT + i * stepDur;
       overlay += renderFallingPiece({ piece, shape, ox, fromY, toY }, begin);
     }
-  }
+  
 
   // HUD (always on top, no overlap)
   const hudY = gridTop + wellH + 26;
