@@ -22,6 +22,7 @@ async function fetchContribWeeks() {
               contributionDays {
                 date
                 contributionCount
+                weekday
               }
             }
           }
@@ -122,34 +123,73 @@ const PIECE_COLOR = {
 // --------------------
 // Build an exact GitHub-like heatmap grid (last 52/53 weeks)
 // --------------------
+function monthAbbrev(dateStr) {
+  const m = new Date(dateStr + "T00:00:00Z").getUTCMonth(); // 0-11
+  return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m];
+}
+function monthIndex(dateStr) {
+  return new Date(dateStr + "T00:00:00Z").getUTCMonth();
+}
+
+const MIN_WEEKS_BETWEEN_MONTH_LABELS = 4; // GH-like spacing
+
 function buildHeatmap(weeks) {
-  // GitHub typically returns 53 weeks; sometimes 52 depending on date boundaries
   const W = Math.min(53, weeks.length);
-  const slice = weeks.slice(-W); // last 52/53 weeks exactly
+  const slice = weeks.slice(-W);
   const H = 7;
 
   const grid = Array.from({ length: H }, () => Array.from({ length: W }, () => 0));
+  const dates = Array.from({ length: H }, () => Array.from({ length: W }, () => null));
+
+  // month label positions (x indices) like GitHub: label at the first week that contains a new month
+   const monthStarts = []; // { x, label }
+  let lastMonth = null;
+  let lastLabeledX = -999;
+
   const daysFlat = [];
 
   for (let x = 0; x < W; x++) {
-    const days = slice[x].contributionDays; // 7 days
+    const days = slice[x].contributionDays;
+
+    // Find the month for this column (use the top day in the column as reference)
+        const refDate = days?.[0]?.date ?? null;
+    if (refDate) {
+      const mi = monthIndex(refDate);
+
+      if (lastMonth === null) {
+        lastMonth = mi;
+        monthStarts.push({ x: 0, label: monthAbbrev(refDate) });
+        lastLabeledX = 0;
+      } else if (mi !== lastMonth) {
+        lastMonth = mi;
+
+        // Only label if there's enough horizontal room since the last label
+        if (x - lastLabeledX >= MIN_WEEKS_BETWEEN_MONTH_LABELS) {
+          monthStarts.push({ x, label: monthAbbrev(refDate) });
+          lastLabeledX = x;
+        }
+      }
+    }
     for (let y = 0; y < H; y++) {
-      const c = days?.[y]?.contributionCount ?? 0;
+      const d = days?.[y];
+      const c = d?.contributionCount ?? 0;
+      const date = d?.date ?? null;
+
       grid[y][x] = c;
-      daysFlat.push({ date: days?.[y]?.date, contributionCount: c });
+      dates[y][x] = date;
+
+      daysFlat.push({ date, contributionCount: c });
     }
   }
 
-  const totalYear = daysFlat.reduce((a, d) => a + d.contributionCount, 0);
-  const last7 = daysFlat.slice(-7).reduce((a, d) => a + d.contributionCount, 0);
-  const last30 = daysFlat.slice(-30).reduce((a, d) => a + d.contributionCount, 0);
+  const totalYear = daysFlat.reduce((a, d) => a + (d.contributionCount ?? 0), 0);
+  const last7 = daysFlat.slice(-7).reduce((a, d) => a + (d.contributionCount ?? 0), 0);
+  const last30 = daysFlat.slice(-30).reduce((a, d) => a + (d.contributionCount ?? 0), 0);
 
-  // A stable seed that changes as your year total changes
   const seed = hashString(`${username}:${totalYear}:${daysFlat[0]?.date ?? ""}`);
 
-  return { grid, W, H, totalYear, last7, last30, seed };
+  return { grid, dates, W, H, monthStarts, totalYear, last7, last30, seed };
 }
-
 // GitHub-like intensity buckets (0..4)
 // You can tweak thresholds if you want it to “feel” closer to your profile.
 function bucketLevel(count) {
@@ -172,36 +212,25 @@ const LEVEL_COLOR = {
 // --------------------
 // SVG render: landscape heatmap + tetromino overlay animation
 // --------------------
-function renderSvg({ grid, W, H, totalYear, last7, last30, seed }) {
-  // Match GitHub heatmap proportions (small cells, landscape)
+function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) {
   const cell = 12;
   const gap = 2;
 
-  const pad = 18;
-  const headerH = 28;
-  const hudH = 34;
+  // Space for GH-style labels
+  const leftLabelW = 34;     // room for Mon/Wed/Fri
+  const topLabelH  = 22;     // room for month labels
+  const pad = 16;
+  const hudH = 46;           // room for legend + stats
 
   const wellW = W * (cell + gap) - gap;
   const wellH = H * (cell + gap) - gap;
 
-  const width = pad * 2 + wellW;
-  const height = pad * 2 + headerH + wellH + hudH;
+  const width = pad * 2 + leftLabelW + wellW;
+  const height = pad * 2 + topLabelH + wellH + hudH;
 
-  // Make it render nicely in README but not enormous
-  // You can still control final size via README width=...
+  // Reasonable intrinsic size; final size controlled by README width=""
   const INTRINSIC_W = 900;
   const INTRINSIC_H = Math.round((height / width) * INTRINSIC_W);
-
-  // Animation plan: 10 runs, each run has N pieces
-  const N_RUNS = 10;
-  const piecesPerRun = 18;
-  const stepDur = 0.55; // seconds between drops
-  const pieceDur = 0.85; // fall duration
-
-  const runDur = Math.max(piecesPerRun * stepDur + 1.0, 8);
-  const totalDur = N_RUNS * runDur;
-
-  const gridTop = pad + headerH;
 
   const defs = `
   <defs>
@@ -218,33 +247,58 @@ function renderSvg({ grid, W, H, totalYear, last7, last30, seed }) {
       <stop offset="100%" stop-color="#0b1020"/>
     </linearGradient>
 
-    <!-- Master clock loops the entire 10-run timeline forever -->
+    <!-- Master clock loops the overlay forever -->
     <animate id="clock" attributeName="opacity"
-             values="1;1" dur="${totalDur}s" repeatCount="indefinite" />
+             values="1;1" dur="${10 * 10}s" repeatCount="indefinite" />
   </defs>
   `;
 
-  const title = `
-  <g>
-    <text x="${pad}" y="${pad + 18}"
-          fill="#e5e7eb"
-          font-family="ui-sans-serif, system-ui"
-          font-size="14"
-          font-weight="800">
-      Contribution Tetris (heatmap mode)
-    </text>
-  </g>
+  // Grid top-left origin (after labels)
+  const gridX0 = pad + leftLabelW;
+  const gridY0 = pad + topLabelH;
+
+  // Month labels (top)
+  let monthLabels = "";
+  for (const m of monthStarts) {
+    const x = gridX0 + m.x * (cell + gap);
+    monthLabels += `
+      <text x="${x}" y="${pad + 14}"
+            fill="#9ca3af"
+            font-family="ui-sans-serif, system-ui"
+            font-size="11">
+        ${m.label}
+      </text>
+    `;
+  }
+
+  // Weekday labels (left) like GitHub: Mon/Wed/Fri
+  // GitHub rows are typically Sun..Sat; so:
+  // Mon = row 1, Wed = row 3, Fri = row 5
+  const dayLabel = (label, row) => {
+    const y = gridY0 + row * (cell + gap) + cell - 2;
+    return `
+      <text x="${pad + leftLabelW - 6}" y="${y}"
+            fill="#9ca3af"
+            font-family="ui-sans-serif, system-ui"
+            font-size="11"
+            text-anchor="end">
+        ${label}
+      </text>
+    `;
+  };
+  const weekdayLabels = `
+    ${dayLabel("Mon", 1)}
+    ${dayLabel("Wed", 3)}
+    ${dayLabel("Fri", 5)}
   `;
 
-  // Background grid tiles + filled heatmap cells (truth layer)
+  // Heatmap tiles (truth)
   let heat = "";
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
-      const px = pad + x * (cell + gap);
-      const py = gridTop + y * (cell + gap);
-
-      const c = grid[y][x];
-      const lvl = bucketLevel(c);
+      const px = gridX0 + x * (cell + gap);
+      const py = gridY0 + y * (cell + gap);
+      const lvl = bucketLevel(grid[y][x]);
       const fill = LEVEL_COLOR[lvl];
 
       heat += `
@@ -253,6 +307,132 @@ function renderSvg({ grid, W, H, totalYear, last7, last30, seed }) {
       `;
     }
   }
+
+  // Overlay animation (10 runs)
+  const N_RUNS = 10;
+  const piecesPerRun = 18;
+  const stepDur = 0.55;
+  const pieceDur = 0.85;
+  const runDur = Math.max(piecesPerRun * stepDur + 1.0, 8);
+  const totalDur = N_RUNS * runDur;
+
+  // Update clock duration to actual totalDur
+  const defsWithClock = defs.replace(
+    /dur="\$\{10 \* 10\}s"/,
+    `dur="${totalDur}s"`
+  );
+
+  function renderFallingPiece({ piece, shape, ox, fromY, toY }, begin) {
+    const color = PIECE_COLOR[piece];
+
+    const x0 = gridX0 + ox * (cell + gap);
+    const yStart = gridY0 + fromY * (cell + gap);
+    const yEnd = gridY0 + toY * (cell + gap);
+
+    let blocks = "";
+    for (const [dx, dy] of shape) {
+      const bx = x0 + dx * (cell + gap);
+      const by = yStart + dy * (cell + gap);
+      blocks += `
+        <rect x="${bx}" y="${by}" width="${cell}" height="${cell}" rx="3"
+              fill="${color}" stroke="#0f172a" stroke-width="1"
+              filter="url(#neonGlow)" opacity="0.95" />
+      `;
+    }
+
+    const dyTrans = (yEnd - yStart).toFixed(2);
+
+    return `
+      <g opacity="0">
+        <animate attributeName="opacity"
+                 values="0;1;1;0"
+                 keyTimes="0;0.05;0.95;1"
+                 dur="${pieceDur}s"
+                 begin="clock.begin+${begin}s"
+                 fill="remove" />
+        <animateTransform attributeName="transform" type="translate"
+                          from="0 0" to="0 ${dyTrans}"
+                          dur="${pieceDur}s"
+                          begin="clock.begin+${begin}s"
+                          fill="remove" />
+        ${blocks}
+      </g>
+    `;
+  }
+
+  let overlay = "";
+  for (let r = 0; r < N_RUNS; r++) {
+    const runSeed = (seed + r * 10007) >>> 0;
+    const rng = mulberry32(runSeed);
+    const baseT = r * runDur;
+
+    for (let i = 0; i < piecesPerRun; i++) {
+      const piece = PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
+      const rot = Math.floor(rng() * 4);
+      const shape = PIECES[piece][rot];
+
+      const ox = clamp(Math.floor(rng() * (W - 3)), 0, Math.max(0, W - 4));
+      const fromY = -4;
+      const toY = clamp(H - 4 + Math.floor(rng() * 3), 0, Math.max(0, H - 1));
+
+      const begin = baseT + i * stepDur;
+      overlay += renderFallingPiece({ piece, shape, ox, fromY, toY }, begin);
+    }
+  }
+
+  // Legend (Less ... More) like GitHub
+  const legendY = gridY0 + wellH + 26;
+  const legendXRight = gridX0 + wellW;
+
+  const legendSquares = [0,1,2,3,4].map((lvl, i) => {
+    const x = legendXRight - (5 - i) * (cell + 4) + 10;
+    return `<rect x="${x}" y="${legendY - 10}" width="${cell}" height="${cell}" rx="3"
+                  fill="${LEVEL_COLOR[lvl]}" stroke="#0f172a" stroke-width="1" />`;
+  }).join("\n");
+
+  const legend = `
+    <text x="${legendXRight - 5 * (cell + 4) - 2}" y="${legendY + 2}"
+          fill="#9ca3af" font-family="ui-sans-serif, system-ui" font-size="11"
+          text-anchor="end">
+      Less
+    </text>
+    ${legendSquares}
+    <text x="${legendXRight + 2}" y="${legendY + 2}"
+          fill="#9ca3af" font-family="ui-sans-serif, system-ui" font-size="11">
+      More
+    </text>
+  `;
+
+  // Stats line (optional; GH shows “X contributions in last year” above the chart;
+  // we place it below to keep your section compact)
+  const stats = `
+    <text x="${gridX0}" y="${legendY + 2}"
+          fill="#e5e7eb"
+          font-family="ui-sans-serif, system-ui"
+          font-size="11">
+      ${totalYear} contributions in the last year • 7d: ${last7} • 30d: ${last30}
+    </text>
+  `;
+
+  return `
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="${INTRINSIC_W}" height="${INTRINSIC_H}"
+     viewBox="0 0 ${width} ${height}"
+     preserveAspectRatio="xMidYMid meet">
+  ${defsWithClock}
+  <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bgGrad)"/>
+
+  ${monthLabels}
+  ${weekdayLabels}
+
+  ${heat}
+  ${overlay}
+
+  ${stats}
+  ${legend}
+</svg>
+`.trim();
+}
 
   // Animated tetromino overlay (visual flair, 10 deterministic variations)
   function renderFallingPiece({ piece, shape, ox, fromY, toY }, begin) {
@@ -366,7 +546,6 @@ const svg = renderSvg(heatmap);
 fs.mkdirSync("output", { recursive: true });
 fs.writeFileSync("output/tetris.svg", svg, "utf-8");
 
-// Safety: prevent publishing corrupted SVG
 if (svg.includes("<<<<<<<") || svg.includes("=======") || svg.includes(">>>>>>>")) {
   throw new Error("SVG contains merge markers!");
 }
