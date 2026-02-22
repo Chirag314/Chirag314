@@ -10,9 +10,9 @@ if (!username) throw new Error("GITHUB_USERNAME missing");
 const octokit = new Octokit({ auth: token });
 
 // --------------------
-// Fetch contributions
+// Fetch contribution weeks (keep week structure)
 // --------------------
-async function fetchContribDays() {
+async function fetchContribWeeks() {
   const query = `
     query($login:String!) {
       user(login:$login) {
@@ -30,12 +30,11 @@ async function fetchContribDays() {
     }
   `;
   const res = await octokit.graphql(query, { login: username });
-  const weeks = res.user.contributionsCollection.contributionCalendar.weeks;
-  return weeks.flatMap((w) => w.contributionDays);
+  return res.user.contributionsCollection.contributionCalendar.weeks;
 }
 
 // --------------------
-// Deterministic RNG
+// Deterministic hashing / RNG
 // --------------------
 function hashString(s) {
   let h = 2166136261;
@@ -61,11 +60,8 @@ function clamp(n, a, b) {
 }
 
 // --------------------
-// Tetris model
+// Tetromino shapes (same as before)
 // --------------------
-const W = 10;
-const H = 20;
-
 const PIECES = {
   I: [
     [[0,1],[1,1],[2,1],[3,1]],
@@ -123,209 +119,89 @@ const PIECE_COLOR = {
   L: "#f97316",
 };
 
-function emptyBoard() {
-  return Array.from({ length: H }, () => Array.from({ length: W }, () => null));
-}
-
-function canPlace(board, shape, ox, oy) {
-  for (const [dx, dy] of shape) {
-    const x = ox + dx;
-    const y = oy + dy;
-    if (x < 0 || x >= W || y < 0 || y >= H) return false;
-    if (board[y][x]) return false;
-  }
-  return true;
-}
-
-function stamp(board, shape, ox, oy, piece) {
-  for (const [dx, dy] of shape) {
-    const x = ox + dx;
-    const y = oy + dy;
-    board[y][x] = { piece, color: PIECE_COLOR[piece] };
-  }
-}
-
-function clearFullRows(board) {
-  let cleared = 0;
-  const newRows = [];
-
-  for (let y = 0; y < H; y++) {
-    const full = board[y].every((c) => c !== null);
-    if (full) cleared++;
-    else newRows.push(board[y]);
-  }
-
-  while (newRows.length < H) {
-    newRows.unshift(Array.from({ length: W }, () => null));
-  }
-
-  return { board: newRows, cleared };
-}
-
 // --------------------
-// Contributions -> schedule (mirrors activity)
+// Build an exact GitHub-like heatmap grid (last 52/53 weeks)
 // --------------------
-function deriveGamePlan(days) {
-  const recent = days.slice(-140); // strong “recent progress” mirroring
+function buildHeatmap(weeks) {
+  // GitHub typically returns 53 weeks; sometimes 52 depending on date boundaries
+  const W = Math.min(53, weeks.length);
+  const slice = weeks.slice(-W); // last 52/53 weeks exactly
+  const H = 7;
 
-  const total = recent.reduce((a, d) => a + d.contributionCount, 0);
-  const last7 = days.slice(-7).reduce((a, d) => a + d.contributionCount, 0);
-  const last30 = days.slice(-30).reduce((a, d) => a + d.contributionCount, 0);
+  const grid = Array.from({ length: H }, () => Array.from({ length: W }, () => 0));
+  const daysFlat = [];
 
-  // base seed changes over time with your contribution history
-  const seed = hashString(`${username}:${total}:${recent[0]?.date ?? ""}`);
-
-  // Build a deterministic drop schedule from daily counts:
-  // - 0 contributions => usually no drops
-  // - higher contributions => up to 3 drops/day
-  const schedule = [];
-  for (const d of recent) {
-    const c = d.contributionCount;
-    if (c <= 0) continue;
-
-    const drops = clamp(1 + Math.floor(c / 8), 1, 3);
-
-    for (let k = 0; k < drops; k++) {
-      // NOTE: we will vary 'seed' per run; including seed here means piece TYPES change per run (Option B)
-      const h = hashString(`${d.date}:${c}:${k}:${seed}`);
-
-      const piece = PIECE_ORDER[h % PIECE_ORDER.length];
-      const rot = (h >>> 8) % 4;
-      const ox = (h >>> 16) % (W - 3);
-
-      schedule.push({ piece, rot, ox });
+  for (let x = 0; x < W; x++) {
+    const days = slice[x].contributionDays; // 7 days
+    for (let y = 0; y < H; y++) {
+      const c = days?.[y]?.contributionCount ?? 0;
+      grid[y][x] = c;
+      daysFlat.push({ date: days?.[y]?.date, contributionCount: c });
     }
   }
 
-  // keep svg manageable but not tiny
-  const maxPieces = 42;
-  const minPieces = 18;
-  const pieces = clamp(schedule.length, minPieces, maxPieces);
+  const totalYear = daysFlat.reduce((a, d) => a + d.contributionCount, 0);
+  const last7 = daysFlat.slice(-7).reduce((a, d) => a + d.contributionCount, 0);
+  const last30 = daysFlat.slice(-30).reduce((a, d) => a + d.contributionCount, 0);
 
-  return {
-    seed,
-    pieces,
-    schedule: schedule.slice(-pieces),
-    totalRecent: total,
-    last7,
-    last30,
-  };
+  // A stable seed that changes as your year total changes
+  const seed = hashString(`${username}:${totalYear}:${daysFlat[0]?.date ?? ""}`);
+
+  return { grid, W, H, totalYear, last7, last30, seed };
 }
 
-// --------------------
-// Simulate game -> steps
-// --------------------
-function simulateGame({ pieces, seed, schedule }) {
-  const rng = mulberry32(seed);
-
-  let board = emptyBoard();
-  let score = 0;
-  let lines = 0;
-
-  const steps = [];
-
-  for (let i = 0; i < pieces; i++) {
-    const planned = schedule?.[i];
-
-    const piece =
-      planned?.piece ?? PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
-    const rot = planned?.rot ?? Math.floor(rng() * 4);
-    const shape = PIECES[piece][rot];
-
-    let ox = planned?.ox ?? clamp(Math.floor(3 + rng() * 4), 0, W - 4);
-    let oy = 0;
-
-    // If spawn collides, nudge a bit (still deterministic-ish)
-    let tries = 0;
-    while (!canPlace(board, shape, ox, oy) && tries < 10) {
-      ox = clamp(Math.floor(rng() * (W - 3)), 0, W - 4);
-      tries++;
-    }
-    if (!canPlace(board, shape, ox, oy)) break;
-
-    let dropY = oy;
-    while (canPlace(board, shape, ox, dropY + 1)) dropY++;
-
-    steps.push({
-      board,
-      falling: { piece, shape, ox, fromY: -4, toY: dropY },
-      flashRows: [],
-      score,
-      lines,
-    });
-
-    const boardAfterLand = board.map((row) => row.map((c) => (c ? { ...c } : null)));
-    stamp(boardAfterLand, shape, ox, dropY, piece);
-
-    score += 5;
-
-    const beforeClear = boardAfterLand;
-    const { board: afterClear, cleared } = clearFullRows(boardAfterLand);
-
-    if (cleared > 0) {
-      lines += cleared;
-      const lineScore = [0, 100, 300, 500, 800][clamp(cleared, 0, 4)];
-      score += lineScore;
-
-      const flash = [];
-      for (let y = 0; y < H; y++) {
-        if (beforeClear[y].every((c) => c !== null)) flash.push(y);
-      }
-
-      steps.push({
-        board: beforeClear,
-        falling: null,
-        flashRows: flash,
-        score,
-        lines,
-      });
-
-      board = afterClear;
-      steps.push({
-        board,
-        falling: null,
-        flashRows: [],
-        score,
-        lines,
-      });
-    } else {
-      board = beforeClear;
-      steps.push({
-        board,
-        falling: null,
-        flashRows: [],
-        score,
-        lines,
-      });
-    }
-  }
-
-  steps.push({ board, falling: null, flashRows: [], score, lines });
-  return steps;
+// GitHub-like intensity buckets (0..4)
+// You can tweak thresholds if you want it to “feel” closer to your profile.
+function bucketLevel(count) {
+  if (count <= 0) return 0;
+  if (count <= 2) return 1;
+  if (count <= 5) return 2;
+  if (count <= 9) return 3;
+  return 4;
 }
 
+// Neon-ish GitHub-like greens on dark
+const LEVEL_COLOR = {
+  0: "#0b1224", // empty tile
+  1: "#0e4429",
+  2: "#006d32",
+  3: "#26a641",
+  4: "#39d353",
+};
+
 // --------------------
-// SVG Rendering (10 runs + infinite loop)
+// SVG render: landscape heatmap + tetromino overlay animation
 // --------------------
-function renderSvg(runs, hudStats) {
-  const cell = 18;
+function renderSvg({ grid, W, H, totalYear, last7, last30, seed }) {
+  // Match GitHub heatmap proportions (small cells, landscape)
+  const cell = 12;
   const gap = 2;
 
-  const pad = 22;
+  const pad = 18;
+  const headerH = 28;
+  const hudH = 34;
+
   const wellW = W * (cell + gap) - gap;
   const wellH = H * (cell + gap) - gap;
 
   const width = pad * 2 + wellW;
-  const height = pad * 2 + wellH + 52;
+  const height = pad * 2 + headerH + wellH + hudH;
 
-  // Make GitHub render it wide (intrinsic px size)
-  const INTRINSIC_W = 1200;
+  // Make it render nicely in README but not enormous
+  // You can still control final size via README width=...
+  const INTRINSIC_W = 900;
   const INTRINSIC_H = Math.round((height / width) * INTRINSIC_W);
 
-  // Timing
-  const stepDur = 0.9;
-  const runDurations = runs.map((steps) => Math.max(steps.length * stepDur, 8));
-  const totalDur = runDurations.reduce((a, b) => a + b, 0);
+  // Animation plan: 10 runs, each run has N pieces
+  const N_RUNS = 10;
+  const piecesPerRun = 18;
+  const stepDur = 0.55; // seconds between drops
+  const pieceDur = 0.85; // fall duration
+
+  const runDur = Math.max(piecesPerRun * stepDur + 1.0, 8);
+  const totalDur = N_RUNS * runDur;
+
+  const gridTop = pad + headerH;
 
   const defs = `
   <defs>
@@ -342,168 +218,127 @@ function renderSvg(runs, hudStats) {
       <stop offset="100%" stop-color="#0b1020"/>
     </linearGradient>
 
-    <!-- Master clock: repeats the whole 10-run timeline forever -->
+    <!-- Master clock loops the entire 10-run timeline forever -->
     <animate id="clock" attributeName="opacity"
              values="1;1" dur="${totalDur}s" repeatCount="indefinite" />
   </defs>
   `;
 
   const title = `
-  <text x="${pad}" y="${pad - 6}"
-        fill="#e5e7eb"
-        font-family="ui-sans-serif, system-ui"
-        font-size="15"
-        font-weight="800">
-    Contribution Tetris (tetromino mode)
-  </text>
+  <g>
+    <text x="${pad}" y="${pad + 18}"
+          fill="#e5e7eb"
+          font-family="ui-sans-serif, system-ui"
+          font-size="14"
+          font-weight="800">
+      Contribution Tetris (heatmap mode)
+    </text>
+  </g>
   `;
 
-  // Well background tiles
-  let grid = "";
+  // Background grid tiles + filled heatmap cells (truth layer)
+  let heat = "";
   for (let y = 0; y < H; y++) {
     for (let x = 0; x < W; x++) {
       const px = pad + x * (cell + gap);
-      const py = pad + y * (cell + gap);
-      grid += `<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="3" fill="#0b1224" stroke="#0f172a" stroke-width="1" />\n`;
-    }
-  }
+      const py = gridTop + y * (cell + gap);
 
-  function renderBoard(board) {
-    let out = "";
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        const c = board[y][x];
-        if (!c) continue;
-        const px = pad + x * (cell + gap);
-        const py = pad + y * (cell + gap);
-        out += `<rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="3"
-                      fill="${c.color}" stroke="#0f172a" stroke-width="1"
-                      filter="url(#neonGlow)" />\n`;
-      }
-    }
-    return out;
-  }
+      const c = grid[y][x];
+      const lvl = bucketLevel(c);
+      const fill = LEVEL_COLOR[lvl];
 
-  function renderFlashRows(rows, begin, dur) {
-    if (!rows || rows.length === 0) return "";
-    let out = "";
-    for (const y of rows) {
-      const py = pad + y * (cell + gap);
-      out += `
-        <rect x="${pad}" y="${py}" width="${wellW}" height="${cell}" rx="6"
-              fill="#ffffff" opacity="0">
-          <animate attributeName="opacity" values="0;0.55;0"
-                   dur="${dur}s" begin="clock.begin+${begin}s" fill="remove" />
-        </rect>
+      heat += `
+        <rect x="${px}" y="${py}" width="${cell}" height="${cell}" rx="3"
+              fill="${fill}" stroke="#0f172a" stroke-width="1" />
       `;
     }
-    return out;
   }
 
-  function renderFalling(falling, begin, dur) {
-    if (!falling) return "";
-    const { piece, shape, ox, fromY, toY } = falling;
+  // Animated tetromino overlay (visual flair, 10 deterministic variations)
+  function renderFallingPiece({ piece, shape, ox, fromY, toY }, begin) {
     const color = PIECE_COLOR[piece];
 
     const x0 = pad + ox * (cell + gap);
-    const yStart = pad + fromY * (cell + gap);
-    const yEnd = pad + toY * (cell + gap);
+    const yStart = gridTop + fromY * (cell + gap);
+    const yEnd = gridTop + toY * (cell + gap);
 
     let blocks = "";
     for (const [dx, dy] of shape) {
       const bx = x0 + dx * (cell + gap);
       const by = yStart + dy * (cell + gap);
-      blocks += `<rect x="${bx}" y="${by}" width="${cell}" height="${cell}" rx="3"
-                      fill="${color}" stroke="#0f172a" stroke-width="1"
-                      filter="url(#neonGlow)" />\n`;
+      blocks += `
+        <rect x="${bx}" y="${by}" width="${cell}" height="${cell}" rx="3"
+              fill="${color}" stroke="#0f172a" stroke-width="1"
+              filter="url(#neonGlow)" opacity="0.95" />
+      `;
     }
 
     const dyTrans = (yEnd - yStart).toFixed(2);
 
     return `
-      <g opacity="1">
+      <g opacity="0">
+        <animate attributeName="opacity"
+                 values="0;1;1;0"
+                 keyTimes="0;0.05;0.95;1"
+                 dur="${pieceDur}s"
+                 begin="clock.begin+${begin}s"
+                 fill="remove" />
         <animateTransform attributeName="transform" type="translate"
                           from="0 0" to="0 ${dyTrans}"
-                          dur="${dur}s" begin="clock.begin+${begin}s" fill="remove" />
-        <animate attributeName="opacity" values="1;1;0"
-                 keyTimes="0;0.98;1" dur="${dur}s" begin="clock.begin+${begin}s" fill="remove" />
+                          dur="${pieceDur}s"
+                          begin="clock.begin+${begin}s"
+                          fill="remove" />
         ${blocks}
       </g>
     `;
   }
 
-  // Frames for all runs back-to-back with offsets
-  let frames = "";
-  let timeOffset = 0;
+  // Build the overlay timeline
+  let overlay = "";
+  for (let r = 0; r < N_RUNS; r++) {
+    const runSeed = (seed + r * 10007) >>> 0;
+    const rng = mulberry32(runSeed);
 
-  for (let r = 0; r < runs.length; r++) {
-    const steps = runs[r];
+    const baseT = r * runDur;
 
-    for (let i = 0; i < steps.length; i++) {
-      const beginLocal = i * stepDur;
-      const begin = timeOffset + beginLocal;
+    for (let i = 0; i < piecesPerRun; i++) {
+      // Piece choice changes each run (Option B)
+      const piece = PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
+      const rot = Math.floor(rng() * 4);
+      const shape = PIECES[piece][rot];
 
-      const boardSvg = renderBoard(steps[i].board);
-      const flashSvg = renderFlashRows(
-        steps[i].flashRows,
-        begin + stepDur * 0.15,
-        stepDur * 0.55
-      );
-      const fallingSvg = renderFalling(steps[i].falling, begin, stepDur * 0.9);
+      // Choose an x that stays in bounds for 4-wide shapes
+      const ox = clamp(Math.floor(rng() * (W - 3)), 0, Math.max(0, W - 4));
 
-      frames += `
-        <g opacity="0">
-          <animate attributeName="opacity"
-                   values="0;1;1;0"
-                   keyTimes="0;0.02;0.98;1"
-                   dur="${stepDur}s"
-                   begin="clock.begin+${begin}s"
-                   fill="remove" />
-          ${boardSvg}
-        </g>
-        ${fallingSvg}
-        ${flashSvg}
-      `;
+      // Small grid height: land near bottom-ish, but vary a bit
+      const fromY = -4;
+      const toY = clamp(H - 4 + Math.floor(rng() * 3), 0, Math.max(0, H - 1)); // ~bottom region
+
+      const begin = baseT + i * stepDur;
+      overlay += renderFallingPiece({ piece, shape, ox, fromY, toY }, begin);
     }
-
-    timeOffset += Math.max(steps.length * stepDur, 8);
   }
 
-  // HUD (fixed: right-aligned so it never clips)
-  const hud = (() => {
-    const { totalRecent, last7, last30 } = hudStats;
+  // HUD (always on top, no overlap)
+  const hudY = gridTop + wellH + 26;
+  const hud = `
+    <g opacity="0.98">
+      <rect x="${pad}" y="${hudY - 18}" width="${wellW}" height="28" rx="10"
+            fill="#0f172a" stroke="#1f2a44" />
+      <text x="${pad + 12}" y="${hudY}" fill="#e5e7eb"
+            font-family="ui-sans-serif, system-ui" font-size="12" font-weight="800">
+        Year: ${totalYear}
+      </text>
+      <text x="${pad + wellW - 12}" y="${hudY}" fill="#93c5fd"
+            font-family="ui-sans-serif, system-ui" font-size="12"
+            text-anchor="end">
+        7d: ${last7}  •  30d: ${last30}  •  Weeks: ${W}
+      </text>
+    </g>
+  `;
 
-    // Use the *last step of the last run* for displayed score/lines
-    const lastRun = runs[runs.length - 1] || [];
-    const final = lastRun[lastRun.length - 1] || { score: 0, lines: 0 };
-
-    const score = final.score ?? 0;
-    const lines = final.lines ?? 0;
-
-    const y = pad + wellH + 34;
-
-    const leftX = pad + 12;
-    const rightX = pad + wellW - 12;
-
-    return `
-      <g opacity="0.98">
-        <rect x="${pad}" y="${y - 18}" width="${wellW}" height="28" rx="10"
-              fill="#0f172a" stroke="#1f2a44" />
-
-        <text x="${leftX}" y="${y}" fill="#e5e7eb"
-              font-family="ui-sans-serif, system-ui" font-size="12" font-weight="800">
-          SCORE: ${score}  •  LINES: ${lines}
-        </text>
-
-        <text x="${rightX}" y="${y}" fill="#93c5fd"
-              font-family="ui-sans-serif, system-ui" font-size="12"
-              text-anchor="end">
-          Recent: ${totalRecent}  •  7d: ${last7}  •  30d: ${last30}
-        </text>
-      </g>
-    `;
-  })();
-
+  // IMPORTANT z-order:
+  // background -> heatmap truth -> animated overlay -> title/hud on top
   return `
 <svg xmlns="http://www.w3.org/2000/svg"
      width="${INTRINSIC_W}" height="${INTRINSIC_H}"
@@ -511,53 +346,28 @@ function renderSvg(runs, hudStats) {
      preserveAspectRatio="xMidYMid meet">
   ${defs}
   <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bgGrad)"/>
+
+  ${heat}
+  ${overlay}
+
   ${title}
-  ${grid}
-  ${frames}
   ${hud}
 </svg>
 `.trim();
 }
 
 // --------------------
-// Main (10 runs, different piece sequences)
+// Main
 // --------------------
-const days = await fetchContribDays();
-const basePlan = deriveGamePlan(days);
-
-const N_RUNS = 10;
-
-// IMPORTANT (Option B):
-// We change the seed per run AND rebuild a run-specific schedule using that seed,
-// so piece TYPES + rotations + X positions differ per run (still contribution-driven).
-const runs = [];
-for (let i = 0; i < N_RUNS; i++) {
-  const runSeed = (basePlan.seed + i * 10007) >>> 0;
-
-  // rebuild schedule with runSeed included so the piece types differ per run
-  const runPlan = {
-    ...basePlan,
-    seed: runSeed,
-    schedule: basePlan.schedule.map((s, idx) => {
-      const h = hashString(`${idx}:${s.piece}:${s.rot}:${s.ox}:${runSeed}`);
-      return {
-        piece: PIECE_ORDER[h % PIECE_ORDER.length],
-        rot: (h >>> 8) % 4,
-        ox: (h >>> 16) % (W - 3),
-      };
-    }),
-  };
-
-  runs.push(simulateGame(runPlan));
-}
-
-const svg = renderSvg(runs, basePlan);
+const weeks = await fetchContribWeeks();
+const heatmap = buildHeatmap(weeks);
+const svg = renderSvg(heatmap);
 
 fs.mkdirSync("output", { recursive: true });
 fs.writeFileSync("output/tetris.svg", svg, "utf-8");
 
-// Extra safety: make sure it is valid XML/SVG-ish (no merge markers, etc.)
-if (svg.includes("<<<<<<") || svg.includes("======") || svg.includes(">>>>>>")) {
+// Safety: prevent publishing corrupted SVG
+if (svg.includes("<<<<<<<") || svg.includes("=======") || svg.includes(">>>>>>>")) {
   throw new Error("SVG contains merge markers!");
 }
 
