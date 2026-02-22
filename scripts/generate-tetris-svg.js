@@ -61,50 +61,190 @@ function clamp(n, a, b) {
 }
 
 // --------------------
-// Tetromino shapes (same as before)
+// Tetromino shapes
 // --------------------
 const PIECES = {
   I: [
-    [[0,1],[1,1],[2,1],[3,1]],
-    [[2,0],[2,1],[2,2],[2,3]],
-    [[0,2],[1,2],[2,2],[3,2]],
-    [[1,0],[1,1],[1,2],[1,3]],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [3, 1],
+    ],
+    [
+      [2, 0],
+      [2, 1],
+      [2, 2],
+      [2, 3],
+    ],
+    [
+      [0, 2],
+      [1, 2],
+      [2, 2],
+      [3, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+      [1, 3],
+    ],
   ],
   O: [
-    [[1,0],[2,0],[1,1],[2,1]],
-    [[1,0],[2,0],[1,1],[2,1]],
-    [[1,0],[2,0],[1,1],[2,1]],
-    [[1,0],[2,0],[1,1],[2,1]],
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [2, 1],
+    ],
   ],
   T: [
-    [[1,0],[0,1],[1,1],[2,1]],
-    [[1,0],[1,1],[2,1],[1,2]],
-    [[0,1],[1,1],[2,1],[1,2]],
-    [[1,0],[0,1],[1,1],[1,2]],
+    [
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [2, 1],
+      [1, 2],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [1, 2],
+    ],
+    [
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [1, 2],
+    ],
   ],
   S: [
-    [[1,0],[2,0],[0,1],[1,1]],
-    [[1,0],[1,1],[2,1],[2,2]],
-    [[1,1],[2,1],[0,2],[1,2]],
-    [[0,0],[0,1],[1,1],[1,2]],
+    [
+      [1, 0],
+      [2, 0],
+      [0, 1],
+      [1, 1],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [2, 1],
+      [2, 2],
+    ],
+    [
+      [1, 1],
+      [2, 1],
+      [0, 2],
+      [1, 2],
+    ],
+    [
+      [0, 0],
+      [0, 1],
+      [1, 1],
+      [1, 2],
+    ],
   ],
   Z: [
-    [[0,0],[1,0],[1,1],[2,1]],
-    [[2,0],[1,1],[2,1],[1,2]],
-    [[0,1],[1,1],[1,2],[2,2]],
-    [[1,0],[0,1],[1,1],[0,2]],
+    [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [2, 0],
+      [1, 1],
+      [2, 1],
+      [1, 2],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [1, 2],
+      [2, 2],
+    ],
+    [
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [0, 2],
+    ],
   ],
   J: [
-    [[0,0],[0,1],[1,1],[2,1]],
-    [[1,0],[2,0],[1,1],[1,2]],
-    [[0,1],[1,1],[2,1],[2,2]],
-    [[1,0],[1,1],[0,2],[1,2]],
+    [
+      [0, 0],
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [2, 0],
+      [1, 1],
+      [1, 2],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [2, 2],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [0, 2],
+      [1, 2],
+    ],
   ],
   L: [
-    [[2,0],[0,1],[1,1],[2,1]],
-    [[1,0],[1,1],[1,2],[2,2]],
-    [[0,1],[1,1],[2,1],[0,2]],
-    [[0,0],[1,0],[1,1],[1,2]],
+    [
+      [2, 0],
+      [0, 1],
+      [1, 1],
+      [2, 1],
+    ],
+    [
+      [1, 0],
+      [1, 1],
+      [1, 2],
+      [2, 2],
+    ],
+    [
+      [0, 1],
+      [1, 1],
+      [2, 1],
+      [0, 2],
+    ],
+    [
+      [0, 0],
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
   ],
 };
 
@@ -124,14 +264,14 @@ const PIECE_COLOR = {
 // Build an exact GitHub-like heatmap grid (last 52/53 weeks)
 // --------------------
 function monthAbbrev(dateStr) {
-  const m = new Date(dateStr + "T00:00:00Z").getUTCMonth(); // 0-11
-  return ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][m];
+  const m = new Date(dateStr + "T00:00:00Z").getUTCMonth();
+  return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][m];
 }
 function monthIndex(dateStr) {
   return new Date(dateStr + "T00:00:00Z").getUTCMonth();
 }
 
-const MIN_WEEKS_BETWEEN_MONTH_LABELS = 4; // GH-like spacing
+const MIN_WEEKS_BETWEEN_MONTH_LABELS = 4;
 
 function buildHeatmap(weeks) {
   const W = Math.min(53, weeks.length);
@@ -141,8 +281,7 @@ function buildHeatmap(weeks) {
   const grid = Array.from({ length: H }, () => Array.from({ length: W }, () => 0));
   const dates = Array.from({ length: H }, () => Array.from({ length: W }, () => null));
 
-  // month label positions (x indices) like GitHub: label at the first week that contains a new month
-   const monthStarts = []; // { x, label }
+  const monthStarts = [];
   let lastMonth = null;
   let lastLabeledX = -999;
 
@@ -151,8 +290,7 @@ function buildHeatmap(weeks) {
   for (let x = 0; x < W; x++) {
     const days = slice[x].contributionDays;
 
-    // Find the month for this column (use the top day in the column as reference)
-        const refDate = days?.[0]?.date ?? null;
+    const refDate = days?.[0]?.date ?? null;
     if (refDate) {
       const mi = monthIndex(refDate);
 
@@ -162,14 +300,13 @@ function buildHeatmap(weeks) {
         lastLabeledX = 0;
       } else if (mi !== lastMonth) {
         lastMonth = mi;
-
-        // Only label if there's enough horizontal room since the last label
         if (x - lastLabeledX >= MIN_WEEKS_BETWEEN_MONTH_LABELS) {
           monthStarts.push({ x, label: monthAbbrev(refDate) });
           lastLabeledX = x;
         }
       }
     }
+
     for (let y = 0; y < H; y++) {
       const d = days?.[y];
       const c = d?.contributionCount ?? 0;
@@ -177,7 +314,6 @@ function buildHeatmap(weeks) {
 
       grid[y][x] = c;
       dates[y][x] = date;
-
       daysFlat.push({ date, contributionCount: c });
     }
   }
@@ -190,8 +326,8 @@ function buildHeatmap(weeks) {
 
   return { grid, dates, W, H, monthStarts, totalYear, last7, last30, seed };
 }
+
 // GitHub-like intensity buckets (0..4)
-// You can tweak thresholds if you want it to “feel” closer to your profile.
 function bucketLevel(count) {
   if (count <= 0) return 0;
   if (count <= 2) return 1;
@@ -202,7 +338,7 @@ function bucketLevel(count) {
 
 // Neon-ish GitHub-like greens on dark
 const LEVEL_COLOR = {
-  0: "#0b1224", // empty tile
+  0: "#0b1224",
   1: "#0e4429",
   2: "#006d32",
   3: "#26a641",
@@ -210,16 +346,17 @@ const LEVEL_COLOR = {
 };
 
 // --------------------
-// SVG render: landscape heatmap + tetromino overlay animation
+// SVG render: landscape heatmap + “pixel-perfect” tiling overlay
+// Tetrominoes cover as much as possible; 1×1 fallback covers the rest.
 // --------------------
 function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) {
   const cell = 12;
   const gap = 2;
 
-  const leftLabelW = 34; // Mon/Wed/Fri
-  const topLabelH = 22;  // month labels
+  const leftLabelW = 34;
+  const topLabelH = 22;
   const pad = 16;
-  const hudH = 46;       // legend + stats
+  const hudH = 46;
 
   const wellW = W * (cell + gap) - gap;
   const wellH = H * (cell + gap) - gap;
@@ -235,10 +372,9 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
 
   // --- Timing: 10 runs loop ---
   const N_RUNS = 10;
-  const piecesPerRun = 18;
-  const stepDur = 0.55;
-  const pieceDur = 0.85;
-  const runDur = Math.max(piecesPerRun * stepDur + 1.0, 8);
+  const stepDur = 0.18; // faster since tiling can create many placements
+  const pieceDur = 0.55;
+  const runDur = 10; // fixed run duration for stable looping
   const totalDur = N_RUNS * runDur;
 
   const defs = `
@@ -261,7 +397,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   </defs>
   `;
 
-  // --- Month labels (filtered spacing already handled in buildHeatmap) ---
+  // --- Month labels ---
   let monthLabels = "";
   for (const m of monthStarts) {
     const x = gridX0 + m.x * (cell + gap);
@@ -275,7 +411,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     `;
   }
 
-  // --- Weekday labels like GitHub: Mon/Wed/Fri on left ---
+  // --- Weekday labels ---
   const dayLabel = (label, row) => {
     const y = gridY0 + row * (cell + gap) + cell - 2;
     return `
@@ -311,9 +447,9 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
-  // --- Tetromino overlay animation ---
-  function renderFallingPiece({ piece, shape, ox, fromY, toY }, begin) {
-    const color = PIECE_COLOR[piece];
+  // --- Renderer for a falling piece (supports color override for 1×1 fallback) ---
+  function renderFallingPiece({ piece, shape, ox, fromY, toY, color }, begin) {
+    const fillColor = color ?? PIECE_COLOR[piece] ?? "#ffffff";
 
     const x0 = gridX0 + ox * (cell + gap);
     const yStart = gridY0 + fromY * (cell + gap);
@@ -325,7 +461,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
       const by = yStart + dy * (cell + gap);
       blocks += `
         <rect x="${bx}" y="${by}" width="${cell}" height="${cell}" rx="3"
-              fill="${color}" stroke="#0f172a" stroke-width="1"
+              fill="${fillColor}" stroke="#0f172a" stroke-width="1"
               filter="url(#neonGlow)" opacity="0.95" />
       `;
     }
@@ -350,23 +486,133 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     `;
   }
 
+  // --------------------
+  // Pixel-perfect tiler (best-effort tetromino packing + 1×1 fallback)
+  // NEVER places blocks on empty cells.
+  // --------------------
+  function makeMaskFromGrid() {
+    return Array.from({ length: H }, (_, y) => Array.from({ length: W }, (_, x) => grid[y][x] > 0));
+  }
+
+  function canPlaceOnMask(mask, shape, ox, oy) {
+    for (const [dx, dy] of shape) {
+      const x = ox + dx;
+      const y = oy + dy;
+      if (x < 0 || x >= W || y < 0 || y >= H) return false;
+      if (!mask[y][x]) return false;
+    }
+    return true;
+  }
+
+  function applyPlace(mask, shape, ox, oy) {
+    for (const [dx, dy] of shape) {
+      const x = ox + dx;
+      const y = oy + dy;
+      mask[y][x] = false;
+    }
+  }
+
+  function chooseNextCell(mask, rng) {
+    // Bottom-most first (gives a tetris-like build-up)
+    for (let y = H - 1; y >= 0; y--) {
+      const xs = [];
+      for (let x = 0; x < W; x++) if (mask[y][x]) xs.push(x);
+      if (xs.length) {
+        return { x: xs[Math.floor(rng() * xs.length)], y };
+      }
+    }
+    return null;
+  }
+
+  function placementScore(shape, ox, oy) {
+    let s = 0;
+    for (const [dx, dy] of shape) {
+      s += bucketLevel(grid[oy + dy][ox + dx]);
+    }
+    return s;
+  }
+
+  function tileToPlacements(rng) {
+    const mask = makeMaskFromGrid();
+    const placements = [];
+
+    // Greedy packing; if impossible for a cell, use 1×1 fallback.
+    let safety = 0;
+    while (safety++ < 4000) {
+      const cell = chooseNextCell(mask, rng);
+      if (!cell) break;
+
+      const { x: cx, y: cy } = cell;
+
+      let best = null;
+
+      // Try all tetrominoes/rotations anchored on that cell
+      for (const p of PIECE_ORDER) {
+        for (let rot = 0; rot < 4; rot++) {
+          const shape = PIECES[p][rot];
+
+          for (const [dx, dy] of shape) {
+            const ox = cx - dx;
+            const oy = cy - dy;
+
+            if (!canPlaceOnMask(mask, shape, ox, oy)) continue;
+
+            const sc = placementScore(shape, ox, oy);
+            if (!best || sc > best.score) {
+              best = { piece: p, shape, ox, oy, score: sc };
+            }
+          }
+        }
+      }
+
+      if (best) {
+        applyPlace(mask, best.shape, best.ox, best.oy);
+        placements.push(best);
+      } else {
+        // 1×1 fallback: cover this single contributed cell exactly
+        const lvl = bucketLevel(grid[cy][cx]);
+        applyPlace(mask, [[0, 0]], cx, cy);
+        placements.push({
+          piece: "P",
+          shape: [[0, 0]],
+          ox: cx,
+          oy: cy,
+          color: LEVEL_COLOR[lvl], // match GH green intensity
+          score: lvl,
+        });
+      }
+    }
+
+    return placements;
+  }
+
+  // --- Build the overlay timeline ---
   let overlay = "";
   for (let r = 0; r < N_RUNS; r++) {
     const runSeed = (seed + r * 10007) >>> 0;
     const rng = mulberry32(runSeed);
     const baseT = r * runDur;
 
-    for (let i = 0; i < piecesPerRun; i++) {
-      const piece = PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
-      const rot = Math.floor(rng() * 4);
-      const shape = PIECES[piece][rot];
+    const placements = tileToPlacements(rng);
 
-      const ox = clamp(Math.floor(rng() * (W - 3)), 0, Math.max(0, W - 4));
-      const fromY = -4;
-      const toY = clamp(H - 4 + Math.floor(rng() * 3), 0, Math.max(0, H - 1));
+    // Spread animations across the run duration
+    const localStep = placements.length > 0 ? Math.min(stepDur, (runDur - 0.5) / placements.length) : stepDur;
 
-      const begin = baseT + i * stepDur;
-      overlay += renderFallingPiece({ piece, shape, ox, fromY, toY }, begin);
+    for (let i = 0; i < placements.length; i++) {
+      const pl = placements[i];
+      const begin = baseT + i * localStep;
+
+      overlay += renderFallingPiece(
+        {
+          piece: pl.piece,
+          shape: pl.shape,
+          ox: pl.ox,
+          fromY: -6,
+          toY: pl.oy,
+          color: pl.color,
+        },
+        begin
+      );
     }
   }
 
@@ -374,11 +620,13 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   const legendY = gridY0 + wellH + 26;
   const legendXRight = gridX0 + wellW;
 
-  const legendSquares = [0, 1, 2, 3, 4].map((lvl, i) => {
-    const x = legendXRight - (5 - i) * (cell + 4) + 10;
-    return `<rect x="${x}" y="${legendY - 10}" width="${cell}" height="${cell}" rx="3"
+  const legendSquares = [0, 1, 2, 3, 4]
+    .map((lvl, i) => {
+      const x = legendXRight - (5 - i) * (cell + 4) + 10;
+      return `<rect x="${x}" y="${legendY - 10}" width="${cell}" height="${cell}" rx="3"
                   fill="${LEVEL_COLOR[lvl]}" stroke="#0f172a" stroke-width="1" />`;
-  }).join("\n");
+    })
+    .join("\n");
 
   const stats = `
     <text x="${gridX0}" y="${legendY + 2}"
@@ -402,7 +650,6 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     </text>
   `;
 
-  // --- Final SVG ---
   return `
 <svg xmlns="http://www.w3.org/2000/svg"
      width="${INTRINSIC_W}" height="${INTRINSIC_H}"
@@ -419,108 +666,6 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
 
   ${stats}
   ${legend}
-</svg>
-`.trim();
-}
-
-  // Animated tetromino overlay (visual flair, 10 deterministic variations)
-  function renderFallingPiece({ piece, shape, ox, fromY, toY }, begin) {
-    const color = PIECE_COLOR[piece];
-
-    const x0 = pad + ox * (cell + gap);
-    const yStart = gridTop + fromY * (cell + gap);
-    const yEnd = gridTop + toY * (cell + gap);
-
-    let blocks = "";
-    for (const [dx, dy] of shape) {
-      const bx = x0 + dx * (cell + gap);
-      const by = yStart + dy * (cell + gap);
-      blocks += `
-        <rect x="${bx}" y="${by}" width="${cell}" height="${cell}" rx="3"
-              fill="${color}" stroke="#0f172a" stroke-width="1"
-              filter="url(#neonGlow)" opacity="0.95" />
-      `;
-    }
-
-    const dyTrans = (yEnd - yStart).toFixed(2);
-
-    return `
-      <g opacity="0">
-        <animate attributeName="opacity"
-                 values="0;1;1;0"
-                 keyTimes="0;0.05;0.95;1"
-                 dur="${pieceDur}s"
-                 begin="clock.begin+${begin}s"
-                 fill="remove" />
-        <animateTransform attributeName="transform" type="translate"
-                          from="0 0" to="0 ${dyTrans}"
-                          dur="${pieceDur}s"
-                          begin="clock.begin+${begin}s"
-                          fill="remove" />
-        ${blocks}
-      </g>
-    `;
-  }
-
-  // Build the overlay timeline
-  let overlay = "";
-  for (let r = 0; r < N_RUNS; r++) {
-    const runSeed = (seed + r * 10007) >>> 0;
-    const rng = mulberry32(runSeed);
-
-    const baseT = r * runDur;
-
-    for (let i = 0; i < piecesPerRun; i++) {
-      // Piece choice changes each run (Option B)
-      const piece = PIECE_ORDER[Math.floor(rng() * PIECE_ORDER.length)];
-      const rot = Math.floor(rng() * 4);
-      const shape = PIECES[piece][rot];
-
-      // Choose an x that stays in bounds for 4-wide shapes
-      const ox = clamp(Math.floor(rng() * (W - 3)), 0, Math.max(0, W - 4));
-
-      // Small grid height: land near bottom-ish, but vary a bit
-      const fromY = -4;
-      const toY = clamp(H - 4 + Math.floor(rng() * 3), 0, Math.max(0, H - 1)); // ~bottom region
-
-      const begin = baseT + i * stepDur;
-      overlay += renderFallingPiece({ piece, shape, ox, fromY, toY }, begin);
-    }
-  
-
-  // HUD (always on top, no overlap)
-  const hudY = gridTop + wellH + 26;
-  const hud = `
-    <g opacity="0.98">
-      <rect x="${pad}" y="${hudY - 18}" width="${wellW}" height="28" rx="10"
-            fill="#0f172a" stroke="#1f2a44" />
-      <text x="${pad + 12}" y="${hudY}" fill="#e5e7eb"
-            font-family="ui-sans-serif, system-ui" font-size="12" font-weight="800">
-        Year: ${totalYear}
-      </text>
-      <text x="${pad + wellW - 12}" y="${hudY}" fill="#93c5fd"
-            font-family="ui-sans-serif, system-ui" font-size="12"
-            text-anchor="end">
-        7d: ${last7}  •  30d: ${last30}  •  Weeks: ${W}
-      </text>
-    </g>
-  `;
-
-  // IMPORTANT z-order:
-  // background -> heatmap truth -> animated overlay -> title/hud on top
-  return `
-<svg xmlns="http://www.w3.org/2000/svg"
-     width="${INTRINSIC_W}" height="${INTRINSIC_H}"
-     viewBox="0 0 ${width} ${height}"
-     preserveAspectRatio="xMidYMid meet">
-  ${defs}
-  <rect x="0" y="0" width="${width}" height="${height}" fill="url(#bgGrad)"/>
-
-  ${heat}
-  ${overlay}
-
-  ${title}
-  ${hud}
 </svg>
 `.trim();
 }
