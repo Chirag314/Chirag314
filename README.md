@@ -71,6 +71,13 @@
 
 ## 🎮 Contribution Tetris
 
-![Tetris Contributions](https://raw.githubusercontent.com/Chirag314/Chirag314/output/output/tetris.svg)
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/Chirag314/Chirag314/output/output/tetris.svg?cachebust=1"
+    width="520"
+    alt="Tetris Contributions"
+  />
+</p>
+
 
 
