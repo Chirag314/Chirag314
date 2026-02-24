@@ -13,10 +13,15 @@ const octokit = new Octokit({ auth: token });
 // Fetch contribution weeks (keep week structure)
 // --------------------
 async function fetchContribWeeks() {
+  // Use explicit from/to so it matches “last year” window more closely
+  const to = new Date();
+  const from = new Date(to);
+  from.setUTCFullYear(to.getUTCFullYear() - 1);
+
   const query = `
-    query($login:String!) {
+    query($login:String!, $from:DateTime!, $to:DateTime!) {
       user(login:$login) {
-        contributionsCollection {
+        contributionsCollection(from: $from, to: $to, includePrivateContributions: true) {
           contributionCalendar {
             weeks {
               contributionDays {
@@ -30,7 +35,13 @@ async function fetchContribWeeks() {
       }
     }
   `;
-  const res = await octokit.graphql(query, { login: username });
+
+  const res = await octokit.graphql(query, {
+    login: username,
+    from: from.toISOString(),
+    to: to.toISOString(),
+  });
+
   return res.user.contributionsCollection.contributionCalendar.weeks;
 }
 
