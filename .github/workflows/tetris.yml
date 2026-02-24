@@ -1,43 +1,56 @@
-name: Generate Tetris Contributions
+name: Update Contribution Tetris
 
 on:
+  push:
+    branches: [ main ]
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "17 * * * *"   # hourly (pick any minute)
   workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tetris-svg
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
-          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
+          cache: npm
 
-      - name: Install
-        run: npm install
+      - name: Install deps
+        run: npm ci
 
       - name: Generate SVG
         env:
           GITHUB_USERNAME: Chirag314
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/generate-tetris-svg1.js
-
-      - name: Push to output branch
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          node scripts/generate-tetris-svg.js
+          python -c "import xml.etree.ElementTree as ET; ET.parse('output/tetris.svg'); print('SVG OK ✅')"
+          ! grep -n '<<<<<<<\|=======\|>>>>>>>' -n output/tetris.svg
 
-          git checkout -B output
+      - name: Publish to output branch
+        run: |
+          git fetch origin output || true
+          git worktree remove /tmp/out --force || true
+          git worktree add /tmp/out origin/output
+
+          mkdir -p /tmp/out/output
+          cp -f output/tetris.svg /tmp/out/output/tetris.svg
+
+          cd /tmp/out
           git add output/tetris.svg
-          git commit -m "chore: update tetris svg" || echo "No changes"
-          git push -f origin output
+          git commit -m "chore: update tetris svg" || echo "No changes to commit"
+          git push origin HEAD:output
