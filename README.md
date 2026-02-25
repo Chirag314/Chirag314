@@ -57,16 +57,15 @@
 
 <p align="center">
   <img height="170"
-       src="https://github-readme-stats.vercel.app/api?username=Chirag314&show_icons=true&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&icon_color=2f81f7&border_color=30363d" />
+       src="https://github-readme-stats-git-masterrstaa-rickstaa.vercel.app/api?username=Chirag314&show_icons=true&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&icon_color=2f81f7&border_color=30363d&cache_seconds=21600" />
   <img height="170"
-       src="https://streak-stats.demolab.com?user=Chirag314&background=0d1117&ring=22c55e&fire=16a34a&currStreakLabel=7ce38b&sideNums=34d399&border_radius=10" />
+       src="https://streak-stats.demolab.com?user=Chirag314&theme=dark&hide_border=false&background=0d1117&border=30363d&ring=22c55e&fire=16a34a&currStreakLabel=7ce38b&sideNums=34d399" />
 </p>
 
 <p align="center">
   <img height="150"
-       src="https://github-readme-stats.vercel.app/api/top-langs/?username=Chirag314&layout=compact&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&border_color=30363d" />
+       src="https://github-readme-stats-git-masterrstaa-rickstaa.vercel.app/api/top-langs/?username=Chirag314&layout=compact&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&border_color=30363d&cache_seconds=21600" />
 </p>
-
 ---
 
 ## 🎮 Contribution Tetris
