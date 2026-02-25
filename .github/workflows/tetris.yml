@@ -43,9 +43,15 @@ jobs:
 
       - name: Publish to output branch
         run: |
-          git fetch origin output || true
-          git worktree remove /tmp/out --force || true
-          git worktree add /tmp/out origin/output
+          set -euo pipefail
+
+          # Configure commit identity for GitHub Actions
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fresh checkout of output branch into a separate folder
+          rm -rf /tmp/out
+          git clone --depth 1 --branch output "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/out
 
           mkdir -p /tmp/out/output
           cp -f output/tetris.svg /tmp/out/output/tetris.svg
@@ -53,4 +59,8 @@ jobs:
           cd /tmp/out
           git add output/tetris.svg
           git commit -m "chore: update tetris svg" || echo "No changes to commit"
-          git push origin HEAD:output
+          git push origin output
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
