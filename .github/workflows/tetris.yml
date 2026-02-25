@@ -37,7 +37,7 @@ jobs:
           GITHUB_USERNAME: Chirag314
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          node scripts/generate-tetris-svg1.js
+          node scripts/generate-tetris-svg.js
           python -c "import xml.etree.ElementTree as ET; ET.parse('output/tetris.svg'); print('SVG OK ✅')"
           ! grep -n '<<<<<<<\|=======\|>>>>>>>' -n output/tetris.svg
 
