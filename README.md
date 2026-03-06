@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="mailto:chirag.d314@gmail.com">Email</a> • 
-  <a href="https://www.kaggle.com/Chirag314">Kaggle</a> 
+  <a href="https://www.kaggle.com/Chirag314">Kaggle</a> •
   <a href="https://www.linkedin.com/in/chiragd314">LinkedIn</a>
 </p>
 
