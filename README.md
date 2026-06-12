@@ -116,6 +116,37 @@
 
 ---
 
+## Featured Projects
+
+<p align="center">
+  <a href="https://github.com/Chirag314/deep-past-mt">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Chirag314&repo=deep-past-mt&theme=github_dark&border_color=30363d&title_color=58a6ff&icon_color=2f81f7" width="48%" />
+  </a>
+  <a href="https://github.com/Chirag314/kaggle_experiment_orchestrator">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Chirag314&repo=kaggle_experiment_orchestrator&theme=github_dark&border_color=30363d&title_color=58a6ff&icon_color=2f81f7" width="48%" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Chirag314/rl_8puzzle">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Chirag314&repo=rl_8puzzle&theme=github_dark&border_color=30363d&title_color=58a6ff&icon_color=2f81f7" width="48%" />
+  </a>
+  <a href="https://github.com/Chirag314/Time-series-forecasting">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Chirag314&repo=Time-series-forecasting&theme=github_dark&border_color=30363d&title_color=58a6ff&icon_color=2f81f7" width="48%" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Chirag314/learning-agency-essay">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Chirag314&repo=learning-agency-essay&theme=github_dark&border_color=30363d&title_color=58a6ff&icon_color=2f81f7" width="48%" />
+  </a>
+  <a href="https://github.com/Chirag314/birdclef2026">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=Chirag314&repo=birdclef2026&theme=github_dark&border_color=30363d&title_color=58a6ff&icon_color=2f81f7" width="48%" />
+  </a>
+</p>
+
+---
+
 ## GitHub Activity
 
 <p align="center">
