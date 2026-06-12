@@ -98,6 +98,10 @@
       <sub><b>GitHub</b></sub>
     </td>
     <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=vscode" width="45" height="45" alt="VS Code" /><br>
+      <sub><b>VS Code</b></sub>
+    </td>
+    <td align="center" width="90">
       <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat&logo=kaggle&logoColor=white" width="45" /><br>
       <sub><b>Kaggle</b></sub>
     </td>
