@@ -1,4 +1,4 @@
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&text=Chirag+Desai&fontSize=52&fontColor=fff&animation=twinkling&section=header&fontAlignY=38&desc=ML+Engineer+%7C+Production+AI+Systems&descSize=18&descAlignY=58&descColor=aaaaff" width="100%" />
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&text=Chirag+Desai&fontSize=52&fontColor=fff&animation=twinkling&section=header&fontAlignY=50" width="100%" />
 
 <p align="center">
   <img src="assets/banner1.gif" alt="" width="100%" style="max-height:220px;" />
