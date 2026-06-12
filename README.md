@@ -62,7 +62,7 @@
 ## GitHub Activity
 
 <p align="center">
-  <img src="https://github-profile-trophy.vercel.app/?username=Chirag314&theme=algolia&margin-w=8&margin-h=8&row=1&column=7" alt="trophies" />
+  <img src="https://github-profile-summary-cards.vercel.app/api/cards/profile-details?username=Chirag314&theme=github_dark" width="95%" alt="contribution summary" />
 </p>
 
 <p align="center">
