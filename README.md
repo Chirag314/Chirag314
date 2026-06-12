@@ -102,6 +102,14 @@
       <sub><b>VS Code</b></sub>
     </td>
     <td align="center" width="90">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jupyter/jupyter-original.svg" width="45" height="45" alt="Jupyter" /><br>
+      <sub><b>Jupyter</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://cdn.simpleicons.org/huggingface/FFD21E" width="45" height="45" alt="HuggingFace" /><br>
+      <sub><b>HuggingFace</b></sub>
+    </td>
+    <td align="center" width="90">
       <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat&logo=kaggle&logoColor=white" width="45" /><br>
       <sub><b>Kaggle</b></sub>
     </td>
