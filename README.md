@@ -3,7 +3,12 @@
 </p>
 
 <h2 align="center">Chirag Desai</h2>
-<p align="center">Delivering production-ready ML solutions — from research and experimentation to deployment and scaling</p>
+
+<p align="center">
+  <a href="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=700&lines=ML+Engineer+%7C+Production+ML+Systems;Research+%E2%86%92+Experimentation+%E2%86%92+Deployment;End-to-End+Machine+Learning+%F0%9F%9A%80">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=700&lines=ML+Engineer+%7C+Production+ML+Systems;Research+%E2%86%92+Experimentation+%E2%86%92+Deployment;End-to-End+Machine+Learning+%F0%9F%9A%80" alt="Typing SVG" />
+  </a>
+</p>
 
 <p align="center">
   <a href="mailto:chirag.d314@gmail.com">Email</a> • 
@@ -12,7 +17,7 @@
 </p>
 
 <p align="center">
-  <img src="https://komarev.com/ghpvc/?username=Chirag314&style=flat-square" alt="profile views" />
+  <img src="https://komarev.com/ghpvc/?username=Chirag314&style=flat-square&color=58a6ff" alt="profile views" />
 </p>
 
 ---
@@ -57,16 +62,25 @@
 ## GitHub Activity
 
 <p align="center">
+  <img src="https://github-profile-trophy.vercel.app/?username=Chirag314&theme=algolia&no-frame=true&no-bg=true&row=1&column=6" alt="trophies" />
+</p>
+
+<p align="center">
   <img height="170"
-       src="https://github-readme-stats-git-masterrstaa-rickstaa.vercel.app/api?username=Chirag314&show_icons=true&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&icon_color=2f81f7&border_color=30363d&cache_seconds=21600" />
+       src="https://github-readme-stats.vercel.app/api?username=Chirag314&show_icons=true&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&icon_color=2f81f7&border_color=30363d&cache_seconds=21600" />
   <img height="170"
        src="https://streak-stats.demolab.com?user=Chirag314&theme=dark&hide_border=false&background=0d1117&border=30363d&ring=22c55e&fire=16a34a&currStreakLabel=7ce38b&sideNums=34d399" />
 </p>
 
 <p align="center">
   <img height="150"
-       src="https://github-readme-stats-git-masterrstaa-rickstaa.vercel.app/api/top-langs/?username=Chirag314&layout=compact&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&border_color=30363d&cache_seconds=21600" />
+       src="https://github-readme-stats.vercel.app/api/top-langs/?username=Chirag314&layout=compact&bg_color=0d1117&title_color=58a6ff&text_color=c9d1d9&border_color=30363d&cache_seconds=21600" />
 </p>
+
+<p align="center">
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=Chirag314&bg_color=0d1117&color=58a6ff&line=2f81f7&point=22c55e&area=true&hide_border=true" alt="activity graph" width="95%" />
+</p>
+
 ---
 
 ## 🎮 Contribution Tetris
@@ -79,4 +93,7 @@
   />
 </p>
 
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%" />
+</p>
 
