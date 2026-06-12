@@ -68,11 +68,11 @@
       <sub><b>Scikit-learn</b></sub>
     </td>
     <td align="center" width="90">
-      <img src="https://skillicons.dev/icons?i=numpy" width="45" height="45" alt="NumPy" /><br>
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg" width="45" height="45" alt="NumPy" /><br>
       <sub><b>NumPy</b></sub>
     </td>
     <td align="center" width="90">
-      <img src="https://skillicons.dev/icons?i=pandas" width="45" height="45" alt="Pandas" /><br>
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg" width="45" height="45" alt="Pandas" /><br>
       <sub><b>Pandas</b></sub>
     </td>
   </tr>
