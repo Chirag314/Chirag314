@@ -52,17 +52,70 @@ Reproducibility is not optional.
 
 ## Tech Stack
 
-<p align="center">
-  <img src="https://skillicons.dev/icons?i=python,pytorch,tensorflow,sklearn,numpy,pandas,docker,aws,linux,git,github&perline=6" alt="tech stack icons" />
-</p>
-
-<p align="center">
-  <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat-square&logo=kaggle&logoColor=white"/>
-  &nbsp;
-  <img alt="Weights &amp; Biases" src="https://img.shields.io/badge/Weights_%26_Biases-FFBE00?style=flat-square&logo=weightsandbiases&logoColor=black"/>
-  &nbsp;
-  <img alt="TorchVision" src="https://img.shields.io/badge/TorchVision-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"/>
-</p>
+<table align="center">
+  <tr>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=python" width="45" height="45" alt="Python" /><br>
+      <sub><b>Python</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=pytorch" width="45" height="45" alt="PyTorch" /><br>
+      <sub><b>PyTorch</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=tensorflow" width="45" height="45" alt="TensorFlow" /><br>
+      <sub><b>TensorFlow</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=sklearn" width="45" height="45" alt="Scikit-learn" /><br>
+      <sub><b>Scikit-learn</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=numpy" width="45" height="45" alt="NumPy" /><br>
+      <sub><b>NumPy</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=pandas" width="45" height="45" alt="Pandas" /><br>
+      <sub><b>Pandas</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=docker" width="45" height="45" alt="Docker" /><br>
+      <sub><b>Docker</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=aws" width="45" height="45" alt="AWS" /><br>
+      <sub><b>AWS</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=linux" width="45" height="45" alt="Linux" /><br>
+      <sub><b>Linux</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=git" width="45" height="45" alt="Git" /><br>
+      <sub><b>Git</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://skillicons.dev/icons?i=github" width="45" height="45" alt="GitHub" /><br>
+      <sub><b>GitHub</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat&logo=kaggle&logoColor=white" width="45" /><br>
+      <sub><b>Kaggle</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="3">
+      <img alt="Weights &amp; Biases" src="https://img.shields.io/badge/Weights_%26_Biases-FFBE00?style=flat&logo=weightsandbiases&logoColor=black" /><br>
+      <sub><b>W&amp;B</b></sub>
+    </td>
+    <td align="center" colspan="3">
+      <img alt="TorchVision" src="https://img.shields.io/badge/TorchVision-EE4C2C?style=flat&logo=pytorch&logoColor=white" /><br>
+      <sub><b>TorchVision</b></sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
