@@ -40,10 +40,7 @@
 ▸ Model evaluation &amp; robustness<br/>
 ▸ MLOps &amp; experiment tracking<br/>
 ▸ Scalable training workflows<br/>
-<br/>
-<b>💡 Belief</b><br/><br/>
-Good ML = good engineering.<br/>
-Reproducibility is not optional.
+
 </td>
 </tr>
 </table>
