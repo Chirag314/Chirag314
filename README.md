@@ -24,38 +24,45 @@
 
 ## About Me
 
-- 🔭 Building end-to-end machine learning systems with a focus on reproducibility, robustness, and real-world constraints  
-- 🧠 Experienced in translating ambiguous problem statements into measurable ML objectives and evaluation strategies  
-- 🧪 Strong emphasis on validation design, experiment tracking, and failure analysis to ensure reliable model performance  
-- 🏗 Interested in scalable ML architectures, model lifecycle management, and production-grade workflows  
-
+<table>
+<tr>
+<td valign="top" width="55%">
+<ul>
+<li>🔭 Building end-to-end ML systems focused on reproducibility and real-world constraints</li>
+<li>🧠 Translating ambiguous problem statements into measurable ML objectives and evaluation strategies</li>
+<li>🧪 Strong emphasis on validation design, experiment tracking, and failure analysis</li>
+<li>🏗 Scalable ML architectures, model lifecycle management, and production-grade workflows</li>
+</ul>
+</td>
+<td valign="top" width="45%">
+<b>📌 Current Focus</b><br/><br/>
+▸ Production ML pipelines<br/>
+▸ Model evaluation &amp; robustness<br/>
+▸ MLOps &amp; experiment tracking<br/>
+▸ Scalable training workflows<br/>
+<br/>
+<b>💡 Belief</b><br/><br/>
+Good ML = good engineering.<br/>
+Reproducibility is not optional.
+</td>
+</tr>
+</table>
 
 ---
 
 ## Tech Stack
 
-### Machine Learning & Data
-![Python](https://img.shields.io/badge/Python-000?style=for-the-badge&logo=python)
-![NumPy](https://img.shields.io/badge/NumPy-000?style=for-the-badge&logo=numpy)
-![Pandas](https://img.shields.io/badge/Pandas-000?style=for-the-badge&logo=pandas)
-![Scikit-Learn](https://img.shields.io/badge/scikit--learn-000?style=for-the-badge&logo=scikit-learn)
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=python,pytorch,tensorflow,sklearn,numpy,pandas,docker,aws,linux,git,github&perline=6" alt="tech stack icons" />
+</p>
 
-### Deep Learning & Vision
-![PyTorch](https://img.shields.io/badge/PyTorch-000?style=for-the-badge&logo=pytorch)
-![TensorFlow](https://img.shields.io/badge/TensorFlow-000?style=for-the-badge&logo=tensorflow)
-![TorchVision](https://img.shields.io/badge/TorchVision-000?style=for-the-badge&logo=pytorch)
-
-
-### Experimentation & MLOps
-![Kaggle](https://img.shields.io/badge/Kaggle-000?style=for-the-badge&logo=kaggle)
-![Weights & Biases](https://img.shields.io/badge/W%26B-000?style=for-the-badge&logo=weightsandbiases)
-![Git](https://img.shields.io/badge/Git-000?style=for-the-badge&logo=git)
-![GitHub](https://img.shields.io/badge/GitHub-000?style=for-the-badge&logo=github)
-
-### Platforms & Infrastructure
-![Linux](https://img.shields.io/badge/Linux-000?style=for-the-badge&logo=linux)
-![Docker](https://img.shields.io/badge/Docker-000?style=for-the-badge&logo=docker)
-![AWS](https://img.shields.io/badge/AWS-000?style=for-the-badge&logo=amazonaws)
+<p align="center">
+  <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat-square&logo=kaggle&logoColor=white"/>
+  &nbsp;
+  <img alt="Weights &amp; Biases" src="https://img.shields.io/badge/Weights_%26_Biases-FFBE00?style=flat-square&logo=weightsandbiases&logoColor=black"/>
+  &nbsp;
+  <img alt="TorchVision" src="https://img.shields.io/badge/TorchVision-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"/>
+</p>
 
 ---
 
