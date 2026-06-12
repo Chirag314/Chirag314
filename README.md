@@ -49,6 +49,8 @@
 
 ## Tech Stack
 
+<h4 align="center">🧠 &nbsp; Machine Learning & Data</h4>
+
 <table align="center">
   <tr>
     <td align="center" width="90">
@@ -75,7 +77,22 @@
       <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg" width="45" height="45" alt="Pandas" /><br>
       <sub><b>Pandas</b></sub>
     </td>
+    <td align="center" width="90">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jupyter/jupyter-original.svg" width="45" height="45" alt="Jupyter" /><br>
+      <sub><b>Jupyter</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img src="https://cdn.simpleicons.org/huggingface/FFD21E" width="45" height="45" alt="HuggingFace" /><br>
+      <sub><b>HuggingFace</b></sub>
+    </td>
   </tr>
+</table>
+
+<br/>
+
+<h4 align="center">⚙️ &nbsp; MLOps & Infrastructure</h4>
+
+<table align="center">
   <tr>
     <td align="center" width="90">
       <img src="https://skillicons.dev/icons?i=docker" width="45" height="45" alt="Docker" /><br>
@@ -102,25 +119,15 @@
       <sub><b>VS Code</b></sub>
     </td>
     <td align="center" width="90">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jupyter/jupyter-original.svg" width="45" height="45" alt="Jupyter" /><br>
-      <sub><b>Jupyter</b></sub>
-    </td>
-    <td align="center" width="90">
-      <img src="https://cdn.simpleicons.org/huggingface/FFD21E" width="45" height="45" alt="HuggingFace" /><br>
-      <sub><b>HuggingFace</b></sub>
-    </td>
-    <td align="center" width="90">
       <img alt="Kaggle" src="https://img.shields.io/badge/Kaggle-20BEFF?style=flat&logo=kaggle&logoColor=white" width="45" /><br>
       <sub><b>Kaggle</b></sub>
     </td>
-  </tr>
-  <tr>
-    <td align="center" colspan="3">
-      <img alt="Weights &amp; Biases" src="https://img.shields.io/badge/Weights_%26_Biases-FFBE00?style=flat&logo=weightsandbiases&logoColor=black" /><br>
+    <td align="center" width="90">
+      <img alt="W&amp;B" src="https://img.shields.io/badge/W%26B-FFBE00?style=flat&logo=weightsandbiases&logoColor=black" width="45" /><br>
       <sub><b>W&amp;B</b></sub>
     </td>
-    <td align="center" colspan="3">
-      <img alt="TorchVision" src="https://img.shields.io/badge/TorchVision-EE4C2C?style=flat&logo=pytorch&logoColor=white" /><br>
+    <td align="center" width="90">
+      <img alt="TorchVision" src="https://img.shields.io/badge/TorchVision-EE4C2C?style=flat&logo=pytorch&logoColor=white" width="45" /><br>
       <sub><b>TorchVision</b></sub>
     </td>
   </tr>
