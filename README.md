@@ -159,7 +159,7 @@
 
 ---
 
-## 🎮 Contribution Tetris
+## 🌌 Contribution Sky
 
 <p align="center">
   <img
