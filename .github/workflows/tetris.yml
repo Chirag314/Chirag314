@@ -41,26 +41,34 @@ jobs:
           python -c "import xml.etree.ElementTree as ET; ET.parse('output/tetris.svg'); print('SVG OK ✅')"
           ! grep -n '<<<<<<<\|=======\|>>>>>>>' -n output/tetris.svg
 
-      - name: Publish to output branch
+      - name: Publish to tetris-output branch
         run: |
           set -euo pipefail
 
-          # Configure commit identity for GitHub Actions
           git config --global user.name  "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Fresh checkout of output branch into a separate folder
+          REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
           rm -rf /tmp/out
-          git clone --depth 1 --branch output "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" /tmp/out
+          if git clone --depth 1 --branch tetris-output "$REPO_URL" /tmp/out 2>/dev/null; then
+            echo "Using existing tetris-output branch"
+          else
+            echo "Creating new tetris-output branch"
+            mkdir /tmp/out
+            cd /tmp/out
+            git init
+            git remote add origin "$REPO_URL"
+            git checkout --orphan tetris-output
+            cd -
+          fi
 
           mkdir -p /tmp/out/output
           cp -f output/tetris.svg /tmp/out/output/tetris.svg
 
           cd /tmp/out
           git add output/tetris.svg
-          git commit -m "chore: update tetris svg" || echo "No changes to commit"
-          git push origin output
+          git commit -m "chore: update tetris svg [skip ci]" || echo "No changes to commit"
+          git push origin tetris-output
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-

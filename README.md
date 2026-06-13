@@ -163,7 +163,7 @@
 
 <p align="center">
   <img
-    src="https://raw.githubusercontent.com/Chirag314/Chirag314/output/output/tetris.svg?cachebust=1"
+    src="https://raw.githubusercontent.com/Chirag314/Chirag314/tetris-output/output/tetris.svg"
     width="900"
     alt="Contribution Tetris"
   />
