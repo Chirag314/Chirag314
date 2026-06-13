@@ -126,11 +126,11 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   const gridY0 = pad + topLabelH;
 
   // Timing constants
-  const STAGGER    = 0.022;  // seconds between successive star appearances
-  const APPEAR_DUR = 0.35;   // twinkle-in duration
-  const POST_BUILD = 0.8;    // pause after sky is full
+  const STAGGER    = 0.045;  // seconds between successive star appearances
+  const APPEAR_DUR = 0.55;   // twinkle-in duration
+  const POST_BUILD = 2.0;    // pause after sky is full
   const FLASH_DUR  = 1.8;    // two-flash window
-  const RESET_FADE = 0.45;
+  const RESET_FADE = 0.6;
 
   // Shuffle non-zero cells
   const rng = mulberry32(seed);
@@ -243,6 +243,62 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
     }
   }
 
+  // Comets — random streaks during the build/hold phase
+  const N_COMETS = 5;
+  const cometRng = mulberry32((seed + 99991) >>> 0);
+  let comets = "";
+
+  for (let c = 0; c < N_COMETS; c++) {
+    // Random start time spread across build + hold, avoiding last 2s before flash
+    const tStart = 1.5 + cometRng() * Math.max(1, buildEnd + POST_BUILD - 3.5);
+    const dur    = 0.7 + cometRng() * 0.6;  // 0.7–1.3s
+
+    // Entry from top edge or right edge; exit to bottom-right area
+    const fromTop = cometRng() > 0.35;
+    let sx, sy, ex, ey;
+    if (fromTop) {
+      sx = gridX0 + cometRng() * wellW * 0.8;
+      sy = gridY0 - 12;
+      ex = sx + (60 + cometRng() * 100);
+      ey = gridY0 + wellH * (0.3 + cometRng() * 0.6);
+    } else {
+      sx = gridX0 + wellW + 10;
+      sy = gridY0 + cometRng() * wellH * 0.5;
+      ex = sx - (80 + cometRng() * 120);
+      ey = sy + (30 + cometRng() * 60);
+    }
+
+    // Tail direction (opposite of travel vector)
+    const dx = ex - sx, dy = ey - sy;
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const tailLen = 28 + cometRng() * 18;
+    const tx = (-dx / len * tailLen).toFixed(1);
+    const ty = (-dy / len * tailLen).toFixed(1);
+
+    // keyTimes relative to cycleDur
+    const eps = 0.0005;
+    const k0 = clamp(tStart / cycleDur, eps, 0.999);
+    const k1 = clamp((tStart + 0.12) / cycleDur, k0 + eps, 0.999);
+    const k2 = clamp((tStart + dur - 0.15) / cycleDur, k1 + eps, 0.999);
+    const k3 = clamp((tStart + dur) / cycleDur, k2 + eps, 0.999);
+
+    comets += `
+    <g opacity="0">
+      <line x1="${tx}" y1="${ty}" x2="0" y2="0"
+            stroke="#ddeeff" stroke-width="1.1" stroke-linecap="round"
+            filter="url(#glow1)" opacity="0.55"/>
+      <circle cx="0" cy="0" r="1.6" fill="#ffffff" filter="url(#glow2)"/>
+      <animate attributeName="opacity" begin="0s"
+        dur="${cycleDur.toFixed(3)}s" repeatCount="indefinite"
+        values="0;0;1;1;0;0"
+        keyTimes="0;${k0};${k1};${k2};${k3};1" fill="remove"/>
+      <animateTransform attributeName="transform" type="translate" begin="0s"
+        dur="${cycleDur.toFixed(3)}s" repeatCount="indefinite"
+        values="${sx.toFixed(1)},${sy.toFixed(1)};${sx.toFixed(1)},${sy.toFixed(1)};${ex.toFixed(1)},${ey.toFixed(1)};${ex.toFixed(1)},${ey.toFixed(1)}"
+        keyTimes="0;${k0};${k3};1" fill="remove"/>
+    </g>`;
+  }
+
   // Two-flash overlay after sky is full
   const f0 = clamp(finishStart / cycleDur, 0, 1);
   const f1 = clamp((finishStart + FLASH_DUR * 0.18) / cycleDur, 0, 1);
@@ -291,6 +347,7 @@ function renderSvg({ grid, W, H, monthStarts, totalYear, last7, last30, seed }) 
   ${monthLabels}
   ${weekdayLabels}
   ${stars}
+  ${comets}
   ${flash}
   ${stats}
   ${legend}
