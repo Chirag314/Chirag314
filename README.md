@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <a href="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=700&lines=Research+%E2%86%92+Experimentation+%E2%86%92+Deployment;Building+Reliable%2C+Scalable+ML+Systems;End-to-End+Machine+Learning+%F0%9F%9A%80">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=700&lines=Research+%E2%86%92+Experimentation+%E2%86%92+Deployment;Building+Reliable%2C+Scalable+ML+Systems;End-to-End+Machine+Learning+%F0%9F%9A%80" alt="Typing SVG" />
+  <a href="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=700&lines=13%2B+Years+Regulated+Clinical+Data+Analytics;Applied+ML+via+Kaggle+Competitions+%28Expert%2C+all+categories%29;LLM+Fine-Tuning+-+RAG+-+Statistical+Modeling">
+    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=58A6FF&center=true&vCenter=true&width=700&lines=13%2B+Years+Regulated+Clinical+Data+Analytics;Applied+ML+via+Kaggle+Competitions+%28Expert%2C+all+categories%29;LLM+Fine-Tuning+-+RAG+-+Statistical+Modeling" alt="Typing SVG" />
   </a>
 </p>
 
@@ -28,18 +28,18 @@
 <tr>
 <td valign="top" width="55%">
 <ul>
-<li>🔭 Building end-to-end ML systems focused on reproducibility and real-world constraints</li>
-<li>🧠 Translating ambiguous problem statements into measurable ML objectives and evaluation strategies</li>
-<li>🧪 Strong emphasis on validation design, experiment tracking, and failure analysis</li>
-<li>🏗 Scalable ML architectures, model lifecycle management, and production-grade workflows</li>
+<li>🧬 13+ years of statistical programming in FDA/EMA-regulated clinical trials — contributed to 3 drug approvals</li>
+<li>🏆 Kaggle Expert (all categories) — 1 Silver, 2 Bronze medals across NLP, bioinformatics, and LLM-safety competitions</li>
+<li>🧪 Strong emphasis on validation design (K-fold CV, leakage-safe backtesting) and experiment tracking (W&amp;B)</li>
+<li>🤖 Applied LLM work: fine-tuning (DeBERTa), retrieval-augmented generation (Qwen-14B/32B multi-agent pipeline)</li>
 </ul>
 </td>
 <td valign="top" width="45%">
 <b>📌 Current Focus</b><br/><br/>
-▸ Production ML pipelines<br/>
-▸ Model evaluation &amp; robustness<br/>
-▸ MLOps &amp; experiment tracking<br/>
-▸ Scalable training workflows<br/>
+▸ Kaggle competitions (NLP, bioinformatics, LLM safety)<br/>
+▸ LLM fine-tuning &amp; RAG pipelines<br/>
+▸ Model evaluation &amp; experiment tracking (W&amp;B, CV design)<br/>
+▸ Clinical statistical modeling (SAS/SQL)<br/>
 
 </td>
 </tr>
@@ -172,4 +172,3 @@
 <p align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%" />
 </p>
-
