@@ -86,6 +86,32 @@
       <sub><b>HuggingFace</b></sub>
     </td>
   </tr>
+  <tr>
+    <td align="center" width="90">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/matplotlib/matplotlib-original.svg" width="45" height="45" alt="Matplotlib" /><br>
+      <sub><b>Matplotlib</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img alt="Seaborn" src="https://img.shields.io/badge/Seaborn-4C72B0?style=flat&logoColor=white" width="45" /><br>
+      <sub><b>Seaborn</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img alt="Bokeh" src="https://img.shields.io/badge/Bokeh-DE5833?style=flat&logoColor=white" width="45" /><br>
+      <sub><b>Bokeh</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img alt="SAS" src="https://img.shields.io/badge/SAS-004B87?style=flat&logoColor=white" width="45" /><br>
+      <sub><b>SAS (13+ yrs)</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img alt="SAS/SQL" src="https://img.shields.io/badge/SAS%2FSQL-004B87?style=flat&logoColor=white" width="45" /><br>
+      <sub><b>SAS/SQL</b></sub>
+    </td>
+    <td align="center" width="90">
+      <img alt="SAS/GRAPH" src="https://img.shields.io/badge/SAS%2FGRAPH-004B87?style=flat&logoColor=white" width="45" /><br>
+      <sub><b>SAS/GRAPH</b></sub>
+    </td>
+  </tr>
 </table>
 
 <br/>
